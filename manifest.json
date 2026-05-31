@@ -1,0 +1,21 @@
+{
+  "name": "App Curso 3A",
+  "short_name": "Curso 3A",
+  "description": "Gestión de cuotas y gastos del curso 3A",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#1e1b4b",
+  "theme_color": "#1e1b4b",
+  "icons": [
+    {
+      "src": "widmer_logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "widmer_logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
