@@ -350,30 +350,13 @@
         const closeModal = id => document.getElementById(id).classList.remove('active');
         window.onclick = e => { if(e.target.classList.contains('modal')) e.target.classList.remove('active'); }
 
-        // ✅ FUNCIONES DE VISTA PREVIA SEGURA
-        const safeBase64 = (data) => {
-            if (!data) return null;
-            const clean = data.replace(/\s/g, '');
-            return clean.startsWith('data:') ? clean : `data:image/jpeg;base64,${clean}`;
-        };
-
+        const safeBase64 = (data) => { if (!data) return null; const clean = data.replace(/\s/g, ''); return clean.startsWith('data:') ? clean : `data:image/jpeg;base64,${clean}`; };
         function openReceiptPreview(id) {
             const rec = appData.egresos.find(x => x.id === id);
             if (!rec || !rec.file) return alert('No hay archivo adjunto.');
             const clean = safeBase64(rec.file);
             const win = window.open('', '_blank', 'width=800,height=600');
-            win.document.write(`
-                <!DOCTYPE html>
-                <html><head><title>Comprobante - ${rec.desc}</title>
-                <style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f8fafc;font-family:system-ui;}</style>
-                </head>
-                <body>
-                    <div style="background:white;padding:1rem;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.1);max-width:95%;max-height:95vh;overflow:auto;">
-                        <img src="${clean}" style="display:block;max-width:100%;height:auto;" alt="Boleta">
-                        <p style="text-align:center;margin-top:0.8rem;color:#64748b;font-size:0.9rem;">${rec.desc} | ${rec.date} | ${formatCLP(rec.amount)}</p>
-                    </div>
-                </body></html>
-            `);
+            win.document.write(`<!DOCTYPE html><html><head><title>Comprobante - ${rec.desc}</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f8fafc;font-family:system-ui;}</style></head><body><div style="background:white;padding:1rem;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.1);max-width:95%;max-height:95vh;overflow:auto;"><img src="${clean}" style="display:block;max-width:100%;height:auto;" alt="Boleta"><p style="text-align:center;margin-top:0.8rem;color:#64748b;font-size:0.9rem;">${rec.desc} | ${rec.date} | ${formatCLP(rec.amount)}</p></div></body></html>`);
             win.document.close();
         }
 
@@ -390,30 +373,44 @@
         let currentUser = null, currentMonth = '05', charts = {}, currentFileData = null;
 
         async function init() {
+            // ✅ MODO PÚBLICO: Detecta URL con ?view=transparencia
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('view') === 'transparencia') {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-container').style.display = 'flex';
+                document.getElementById('sidebar').style.display = 'none';
+                document.getElementById('current-user-display').style.display = 'none';
+                document.getElementById('theme-icon').parentElement.style.display = 'none';
+                currentUser = 'PÚBLICO';
+                
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                document.getElementById('tab-transparencia').classList.add('active');
+                document.getElementById('page-title').textContent = 'Transparencia Pública';
+                
+                const now = new Date(); currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+                updateMonthSelector();
+                
+                try {
+                    const docRef = db.collection('app_data').doc('curso3a');
+                    const docSnap = await docRef.get();
+                    if (docSnap.exists) { appData = docSnap.data(); syncCuotaValues(); }
+                    else { appData.students = JSON.parse(JSON.stringify(INITIAL_STUDENTS)); initializeAllMonths(); }
+                    renderTransparencia();
+                } catch(e) { console.error("Error al cargar datos públicos:", e); document.getElementById('transparency-content').innerHTML = '<p style="text-align:center; padding:2rem; color:var(--danger);">Error al cargar la información pública. Intenta más tarde.</p>'; }
+                return;
+            }
+
             try {
                 const docRef = db.collection('app_data').doc('curso3a');
                 const docSnap = await docRef.get();
                 if (docSnap.exists) { appData = docSnap.data(); } 
                 else {
                     const localData = localStorage.getItem(APP_KEY);
-                    if (localData) {
-                        console.log('🔄 Migrando datos de localStorage a Firebase...');
-                        appData = JSON.parse(localData);
-                        if (!appData.config) appData.config = { cuotaAmount: 10000, cuotaHistory: [], theme: 'light' };
-                        if (!appData.cuotas) initializeAllMonths();
-                        await saveData();
-                        console.log('✅ Migración completada. Datos sincronizados en la nube.');
-                    } else {
-                        appData.students = JSON.parse(JSON.stringify(INITIAL_STUDENTS));
-                        initializeAllMonths();
-                        await saveData();
-                    }
+                    if (localData) { console.log('🔄 Migrando datos...'); appData = JSON.parse(localData); if (!appData.config) appData.config = { cuotaAmount: 10000, cuotaHistory: [], theme: 'light' }; if (!appData.cuotas) initializeAllMonths(); await saveData(); } 
+                    else { appData.students = JSON.parse(JSON.stringify(INITIAL_STUDENTS)); initializeAllMonths(); await saveData(); }
                 }
-            } catch (e) {
-                console.error("Error al conectar con Firebase:", e);
-                alert("⚠️ Error de conexión con Firebase. Verifica tu internet o las reglas de Firestore.");
-                return;
-            }
+            } catch (e) { console.error("Error al conectar con Firebase:", e); alert("⚠️ Error de conexión con Firebase."); return; }
+            
             syncCuotaValues();
             if(appData.config.theme === 'dark') { document.body.setAttribute('data-theme', 'dark'); document.getElementById('theme-toggle').classList.add('active'); }
             const now = new Date(); const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -421,82 +418,30 @@
             checkSession();
         }
 
-        function syncCuotaValues() {
-            const base = appData.config.cuotaAmount || 10000;
-            if(appData.config.cuotaAmount === 0) appData.config.cuotaAmount = base;
-            appData.cuotas.forEach(c => { if(c.amountPer === 0) c.amountPer = base; c.total = c.amountPer * c.paidStudents.length; });
-        }
+        function syncCuotaValues() { const base = appData.config.cuotaAmount || 10000; if(appData.config.cuotaAmount === 0) appData.config.cuotaAmount = base; appData.cuotas.forEach(c => { if(c.amountPer === 0) c.amountPer = base; c.total = c.amountPer * c.paidStudents.length; }); }
         function initializeAllMonths() { ALL_MONTHS.forEach(m => { const k=`2026-${m}`; if(!appData.cuotas.find(c=>c.month===k)) appData.cuotas.push({month:k, amountPer:appData.config.cuotaAmount||10000, paidStudents:[], total:0}); }); }
+        
         async function saveData() {
+            if (currentUser === 'PÚBLICO') return; // 🛡️ Bloquea escrituras públicas
             try { await db.collection('app_data').doc('curso3a').set(appData); renderAll(); } 
-            catch (e) { console.error("Error al guardar en Firebase:", e); alert("❌ No se pudo guardar. Revisa tu conexión a internet."); }
+            catch (e) { console.error("Error al guardar en Firebase:", e); alert("❌ No se pudo guardar."); }
         }
-        function logActivity(a, d) { appData.logs.unshift({ ts: new Date().toISOString(), user: currentUser, action: a, details: d }); saveData(); }
 
-        function checkSession() {
-            const u = localStorage.getItem(APP_KEY + '_user');
-            if(u && USERS[u]) { currentUser = u; document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-container').style.display = 'flex'; document.getElementById('current-user-display').textContent = currentUser; updateMonthSelector(); renderAll(); }
-            else { document.getElementById('login-screen').style.display = 'flex'; document.getElementById('app-container').style.display = 'none'; }
-        }
+        function logActivity(a, d) { if (currentUser === 'PÚBLICO') return; appData.logs.unshift({ ts: new Date().toISOString(), user: currentUser, action: a, details: d }); saveData(); }
+        function checkSession() { const u = localStorage.getItem(APP_KEY + '_user'); if(u && USERS[u]) { currentUser = u; document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-container').style.display = 'flex'; document.getElementById('current-user-display').textContent = currentUser; updateMonthSelector(); renderAll(); } else { document.getElementById('login-screen').style.display = 'flex'; document.getElementById('app-container').style.display = 'none'; } }
         function handleLogin() { const u = document.getElementById('login-user').value.trim().toUpperCase(); const p = document.getElementById('login-pass').value; if(USERS[u] === p) { currentUser = u; localStorage.setItem(APP_KEY+'_user', u); document.getElementById('login-error').style.display='none'; checkSession(); } else document.getElementById('login-error').style.display='block'; }
         function logout() { localStorage.removeItem(APP_KEY+'_user'); currentUser=null; location.reload(); }
-        function toggleTheme() { const d = document.body.getAttribute('data-theme') === 'dark'; document.body.setAttribute('data-theme', d ? 'light' : 'dark'); document.getElementById('theme-toggle').classList.toggle('active'); appData.config.theme = d ? 'light' : 'dark'; saveData(); updateChartsTheme(); }
+        function toggleTheme() { if (currentUser === 'PÚBLICO') return; const d = document.body.getAttribute('data-theme') === 'dark'; document.body.setAttribute('data-theme', d ? 'light' : 'dark'); document.getElementById('theme-toggle').classList.toggle('active'); appData.config.theme = d ? 'light' : 'dark'; saveData(); updateChartsTheme(); }
         function setMonth(m) { currentMonth = m; updateMonthSelector(); renderAll(); }
-        function updateMonthSelector() {
-            document.querySelectorAll('.month-btn').forEach(b => b.classList.toggle('active', b.dataset.month === currentMonth));
-            document.getElementById('chart-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`;
-            document.getElementById('cuota-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`;
-            document.getElementById('trans-period').textContent = `${MONTH_NAMES[currentMonth]} 2026`;
-            document.getElementById('trans-expenses-month').textContent = `${MONTH_NAMES[currentMonth]} 2026`;
-        }
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-'+tab).classList.add('active');
-            event.currentTarget.classList.add('active');
-            document.getElementById('sidebar').classList.remove('active');
-            document.getElementById('menuOverlay').classList.remove('active');
-            const titles = {'dashboard':'Dashboard General','curso':'Listado del Curso','ingresos':'Ingresos Extra','cuotas':'Pago de Cuotas','egresos':'Gastos','transparencia':'Transparencia','movimientos':'Movimientos','config':'Configuración'};
-            document.getElementById('page-title').textContent = titles[tab];
-            renderAll();
-        }
+        function updateMonthSelector() { document.querySelectorAll('.month-btn').forEach(b => b.classList.toggle('active', b.dataset.month === currentMonth)); document.getElementById('chart-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('cuota-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('trans-period').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('trans-expenses-month').textContent = `${MONTH_NAMES[currentMonth]} 2026`; }
+        function switchTab(tab) { if (currentUser === 'PÚBLICO') return; // 🛡️ Bloquea navegación pública
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById('tab-'+tab).classList.add('active'); event.currentTarget.classList.add('active'); document.getElementById('sidebar').classList.remove('active'); document.getElementById('menuOverlay').classList.remove('active'); const titles = {'dashboard':'Dashboard General','curso':'Listado del Curso','ingresos':'Ingresos Extra','cuotas':'Pago de Cuotas','egresos':'Gastos','transparencia':'Transparencia','movimientos':'Movimientos','config':'Configuración'}; document.getElementById('page-title').textContent = titles[tab]; renderAll(); }
         function renderAll() { renderDashboard(); renderCurso(); renderIngresos(); renderCuotas(); renderEgresos(); renderTransparencia(); renderMovimientos(); renderConfig(); }
 
-        function createChart(cid, cfg) {
-            const ctx = document.getElementById(cid).getContext('2d');
-            const dk = document.body.getAttribute('data-theme') === 'dark';
-            cfg.options = cfg.options || {}; cfg.options.plugins = cfg.options.plugins || {};
-            cfg.options.plugins.legend = cfg.options.plugins.legend || {}; cfg.options.plugins.legend.labels = cfg.options.plugins.legend.labels || {};
-            cfg.options.plugins.legend.labels.color = dk ? '#94a3b8' : '#64748b';
-            cfg.options.plugins.datalabels = { anchor: 'end', align: 'end', offset: 0, color: dk ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 12 } };
-            cfg.options.scales = cfg.options.scales || {};
-            Object.keys(cfg.options.scales).forEach(s => {
-                if(!cfg.options.scales[s].ticks) cfg.options.scales[s].ticks = {}; cfg.options.scales[s].ticks.color = dk ? '#94a3b8' : '#64748b';
-                if(!cfg.options.scales[s].grid) cfg.options.scales[s].grid = {}; cfg.options.scales[s].grid.color = dk ? '#334155' : '#e2e8f0';
-            });
-            if(charts[cid]) charts[cid].destroy();
-            charts[cid] = new Chart(ctx, cfg);
-        }
+        function createChart(cid, cfg) { const ctx = document.getElementById(cid).getContext('2d'); const dk = document.body.getAttribute('data-theme') === 'dark'; cfg.options = cfg.options || {}; cfg.options.plugins = cfg.options.plugins || {}; cfg.options.plugins.legend = cfg.options.plugins.legend || {}; cfg.options.plugins.legend.labels = cfg.options.plugins.legend.labels || {}; cfg.options.plugins.legend.labels.color = dk ? '#94a3b8' : '#64748b'; cfg.options.plugins.datalabels = { anchor: 'end', align: 'end', offset: 0, color: dk ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 12 } }; cfg.options.scales = cfg.options.scales || {}; Object.keys(cfg.options.scales).forEach(s => { if(!cfg.options.scales[s].ticks) cfg.options.scales[s].ticks = {}; cfg.options.scales[s].ticks.color = dk ? '#94a3b8' : '#64748b'; if(!cfg.options.scales[s].grid) cfg.options.scales[s].grid = {}; cfg.options.scales[s].grid.color = dk ? '#334155' : '#e2e8f0'; }); if(charts[cid]) charts[cid].destroy(); charts[cid] = new Chart(ctx, cfg); }
         function updateChartsTheme() { Object.keys(charts).forEach(id => { const c=charts[id]; const dk=document.body.getAttribute('data-theme')==='dark'; if(c.options.plugins.legend?.labels) c.options.plugins.legend.labels.color=dk?'#94a3b8':'#64748b'; if(c.options.scales) Object.keys(c.options.scales).forEach(s=>{if(c.options.scales[s].ticks)c.options.scales[s].ticks.color=dk?'#94a3b8':'#64748b';if(c.options.scales[s].grid)c.options.scales[s].grid.color=dk?'#334155':'#e2e8f0';}); c.update(); }); }
 
-        function renderDashboard() {
-            const tExtras = appData.ingresos.reduce((s,i) => s+i.amount, 0);
-            const tCuotas = appData.cuotas.reduce((s,c) => s+c.total, 0);
-            const tIngr = tExtras + tCuotas;
-            const tEgr = appData.egresos.reduce((s,e) => s+e.amount, 0);
-            document.getElementById('dash-balance').textContent = formatCLP(tIngr - tEgr);
-            document.getElementById('dash-ingresos').textContent = formatCLP(tIngr);
-            document.getElementById('dash-egresos').textContent = formatCLP(tEgr);
-            const cr = appData.cuotas.find(c => c.month === `2026-${currentMonth}`);
-            const pc = cr ? cr.paidStudents.length : 0;
-            document.getElementById('dash-students').textContent = `${pc}/${appData.students.length}`;
-            const inc = ALL_MONTHS.map(m => { const c=appData.cuotas.find(x=>x.month===`2026-${m}`); const e=appData.ingresos.filter(i=>i.date.startsWith(`2026-${m}`)).reduce((s,i)=>s+i.amount,0); return (c?c.total:0)+e; });
-            const exp = ALL_MONTHS.map(m => appData.egresos.filter(e=>e.date.startsWith(`2026-${m}`)).reduce((s,e)=>s+e.amount,0));
-            createChart('chartIncomeExpense', { type: 'bar', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES_SHORT[m]), datasets: [{ label: 'Ingresos', data: inc, backgroundColor: '#10b981', borderRadius: 6 }, { label: 'Egresos', data: exp, backgroundColor: '#ef4444', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false } });
-            createChart('chartPaidStudents', { type: 'doughnut', data: { labels: ['Pagados','Pendientes'], datasets: [{ data: [pc, appData.students.length-pc], backgroundColor: ['#10b981','#ef4444'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, datalabels: { color: document.body.getAttribute('data-theme') === 'dark' ? '#f1f5f9' : '#ffffff', font: { weight: 'bold', size: 14 }, formatter: v => v } } } });
-            const cd = ALL_MONTHS.map(m => { const c=appData.cuotas.find(x=>x.month===`2026-${m}`); return c?c.total:0; });
-            createChart('chartAnnual', { type: 'line', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES_SHORT[m]), datasets: [{ label: 'Ingresos Cuotas', data: cd, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6, pointHoverRadius: 8 }, { label: 'Egresos', data: exp, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6, pointHoverRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' } }, datalabels: { anchor: 'end', align: 'top', color: document.body.getAttribute('data-theme') === 'dark' ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 11 }, formatter: v => v > 0 ? formatCLP(v) : '' } }, scales: { y: { beginAtZero: true, ticks: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b', callback: v => '$'+(v/1000)+'k' }, grid: { color: document.body.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0' } }, x: { ticks: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }, grid: { color: document.body.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0' } } } } });
-        }
+        function renderDashboard() { const tExtras = appData.ingresos.reduce((s,i) => s+i.amount, 0); const tCuotas = appData.cuotas.reduce((s,c) => s+c.total, 0); const tIngr = tExtras + tCuotas; const tEgr = appData.egresos.reduce((s,e) => s+e.amount, 0); document.getElementById('dash-balance').textContent = formatCLP(tIngr - tEgr); document.getElementById('dash-ingresos').textContent = formatCLP(tIngr); document.getElementById('dash-egresos').textContent = formatCLP(tEgr); const cr = appData.cuotas.find(c => c.month === `2026-${currentMonth}`); const pc = cr ? cr.paidStudents.length : 0; document.getElementById('dash-students').textContent = `${pc}/${appData.students.length}`; const inc = ALL_MONTHS.map(m => { const c=appData.cuotas.find(x=>x.month===`2026-${m}`); const e=appData.ingresos.filter(i=>i.date.startsWith(`2026-${m}`)).reduce((s,i)=>s+i.amount,0); return (c?c.total:0)+e; }); const exp = ALL_MONTHS.map(m => appData.egresos.filter(e=>e.date.startsWith(`2026-${m}`)).reduce((s,e)=>s+e.amount,0)); createChart('chartIncomeExpense', { type: 'bar', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES_SHORT[m]), datasets: [{ label: 'Ingresos', data: inc, backgroundColor: '#10b981', borderRadius: 6 }, { label: 'Egresos', data: exp, backgroundColor: '#ef4444', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false } }); createChart('chartPaidStudents', { type: 'doughnut', data: { labels: ['Pagados','Pendientes'], datasets: [{ data: [pc, appData.students.length-pc], backgroundColor: ['#10b981','#ef4444'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, datalabels: { color: document.body.getAttribute('data-theme') === 'dark' ? '#f1f5f9' : '#ffffff', font: { weight: 'bold', size: 14 }, formatter: v => v } } } }); const cd = ALL_MONTHS.map(m => { const c=appData.cuotas.find(x=>x.month===`2026-${m}`); return c?c.total:0; }); createChart('chartAnnual', { type: 'line', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES_SHORT[m]), datasets: [{ label: 'Ingresos Cuotas', data: cd, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6, pointHoverRadius: 8 }, { label: 'Egresos', data: exp, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6, pointHoverRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' } }, datalabels: { anchor: 'end', align: 'top', color: document.body.getAttribute('data-theme') === 'dark' ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 11 }, formatter: v => v > 0 ? formatCLP(v) : '' } }, scales: { y: { beginAtZero: true, ticks: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b', callback: v => '$'+(v/1000)+'k' }, grid: { color: document.body.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0' } }, x: { ticks: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }, grid: { color: document.body.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0' } } } } }); }
 
         function renderCurso() { document.getElementById('students-list-curso').innerHTML = appData.students.map(s => `<div class="student-row"><div class="student-info"><div class="student-num">${s.id}</div><div><div class="student-name">${s.last} ${s.first}</div><div class="student-detail">Apoderado: ${s.guard||'-'} | Tel: ${s.phone||'-'}</div></div></div><button class="btn btn-sm btn-primary" onclick="openEditStudentModal(${s.id})">Editar</button></div>`).join(''); }
         function openEditStudentModal(id) { if(id) { const s=appData.students.find(x=>x.id===id); document.getElementById('edit-student-id').value=s.id; document.getElementById('edit-guard').value=s.guard; document.getElementById('edit-phone').value=s.phone; } else { document.getElementById('edit-student-id').value=''; document.getElementById('edit-guard').value=''; document.getElementById('edit-phone').value=''; } document.getElementById('modal-edit-student').classList.add('active'); }
@@ -504,82 +449,37 @@
         function openAddStudentModal() { document.getElementById('add-student-last').value=''; document.getElementById('add-student-first').value=''; document.getElementById('add-student-guard').value=''; document.getElementById('add-student-phone').value=''; document.getElementById('modal-add-student').classList.add('active'); }
         function saveNewStudent() { const l=document.getElementById('add-student-last').value.trim().toUpperCase(), f=document.getElementById('add-student-first').value.trim().toUpperCase(), g=document.getElementById('add-student-guard').value.trim(), p=document.getElementById('add-student-phone').value.trim(); if(!l||!f) return alert('Completa al menos apellido y nombres'); appData.students.push({id:appData.nextStudentId++,last:l,first:f,guard:g,phone:p}); logActivity('AGREGAR_ALUMNO',`Agregó nuevo alumno: ${l} ${f}`); closeModal('modal-add-student'); saveData(); alert('Alumno agregado correctamente'); }
 
-        function renderIngresos() {
-            const c = document.getElementById('ingresos-list');
-            if(appData.ingresos.length === 0) { c.innerHTML = '<p style="text-align:center; color:#64748b; padding:2rem;">No hay ingresos.</p>'; return; }
-            const sorted = [...appData.ingresos].sort((a,b) => new Date(b.date) - new Date(a.date));
-            c.innerHTML = sorted.map(i => {
-                const paying = i.type === 'cuota' ? i.students.filter(s => !s.exempt).length : 0;
-                const p = i.type === 'cuota' ? (paying / appData.students.length * 100) : 100;
-                return `<div class="card" style="margin-bottom:1rem; border-left:4px solid var(--success);"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;"><div><strong>${i.concept}</strong> <span class="badge" style="background:#e0f2fe; color:#0284c7;">${i.type === 'fijo' ? 'Fijo' : 'Por Alumno'}</span><div style="font-size:0.85rem; color:#64748b; margin-top:0.3rem;">${i.date} | ${i.type === 'fijo' ? 'Total: '+formatCLP(i.amount) : formatCLP(i.amountPer)+' c/u'}</div></div><div style="display:flex; gap:0.5rem;">${i.type === 'cuota' ? `<button class="btn btn-sm btn-primary" onclick="editIngreso(${i.id})">Editar/Ver</button>` : ''}<button class="btn btn-sm btn-danger" onclick="deleteIngreso(${i.id})">Eliminar</button></div></div>${i.type === 'cuota' ? `<div style="margin-top:0.8rem;"><div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.3rem;"><span>Pagando: ${paying}/${i.students.length} (Total clase: ${appData.students.length})</span><span>${formatCLP(i.amount)}</span></div><div class="progress-container"><div class="progress-bar" style="width:${p}%"></div></div></div>` : ''}</div>`;
-            }).join('');
-        }
+        function renderIngresos() { const c = document.getElementById('ingresos-list'); if(appData.ingresos.length === 0) { c.innerHTML = '<p style="text-align:center; color:#64748b; padding:2rem;">No hay ingresos.</p>'; return; } const sorted = [...appData.ingresos].sort((a,b) => new Date(b.date) - new Date(a.date)); c.innerHTML = sorted.map(i => { const paying = i.type === 'cuota' ? i.students.filter(s => !s.exempt).length : 0; const p = i.type === 'cuota' ? (paying / appData.students.length * 100) : 100; return `<div class="card" style="margin-bottom:1rem; border-left:4px solid var(--success);"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;"><div><strong>${i.concept}</strong> <span class="badge" style="background:#e0f2fe; color:#0284c7;">${i.type === 'fijo' ? 'Fijo' : 'Por Alumno'}</span><div style="font-size:0.85rem; color:#64748b; margin-top:0.3rem;">${i.date} | ${i.type === 'fijo' ? 'Total: '+formatCLP(i.amount) : formatCLP(i.amountPer)+' c/u'}</div></div><div style="display:flex; gap:0.5rem;">${i.type === 'cuota' ? `<button class="btn btn-sm btn-primary" onclick="editIngreso(${i.id})">Editar/Ver</button>` : ''}<button class="btn btn-sm btn-danger" onclick="deleteIngreso(${i.id})">Eliminar</button></div></div>${i.type === 'cuota' ? `<div style="margin-top:0.8rem;"><div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.3rem;"><span>Pagando: ${paying}/${i.students.length} (Total clase: ${appData.students.length})</span><span>${formatCLP(i.amount)}</span></div><div class="progress-container"><div class="progress-bar" style="width:${p}%"></div></div></div>` : ''}</div>`; }).join(''); }
         function openIngresoModal() { document.getElementById('ingreso-type').value = 'fijo'; document.getElementById('ingreso-date').value = `2026-${currentMonth}-01`; document.getElementById('ingreso-concept').value = ''; document.getElementById('ingreso-amount').value = ''; document.getElementById('ingreso-amount-per').value = ''; toggleIngresoFields(); renderStudentChecks('ingreso-students-checks', []); document.getElementById('modal-ingreso').classList.add('active'); }
         function toggleIngresoFields() { const t = document.getElementById('ingreso-type').value; document.getElementById('ingreso-fijo-fields').style.display = t === 'fijo' ? 'block' : 'none'; document.getElementById('ingreso-cuota-fields').style.display = t === 'cuota' ? 'block' : 'none'; }
         function renderStudentChecks(cid, pd) { document.getElementById(cid).innerHTML = appData.students.map(s => { const d = pd.find(p => p.id === s.id) || {}; const ip = d.paid || false, ie = d.exempt || false; return `<div class="student-check ${ie?'exempt':(ip?'paid':'')}"><label><input type="checkbox" value="${s.id}" ${ip?'checked':''} onchange="updateIngresoCheck(this)"><span style="font-size:0.9rem;">${s.id}. ${s.last} ${s.first}</span></label><button class="exempt-toggle ${ie?'active':''}" onclick="toggleExempt(this, ${s.id})">Eximir</button></div>`; }).join(''); }
         function toggleExempt(btn, id) { btn.classList.toggle('active'); const div = btn.closest('.student-check'), cb = div.querySelector('input[type="checkbox"]'); if(btn.classList.contains('active')) { cb.checked = true; cb.disabled = true; div.classList.add('exempt'); div.classList.remove('paid'); } else { cb.checked = false; cb.disabled = false; div.classList.remove('exempt'); } }
         function updateIngresoCheck(cb) { const div = cb.closest('.student-check'); if(cb.checked && !div.querySelector('.exempt-toggle').classList.contains('active')) div.classList.add('paid'); else div.classList.remove('paid'); }
 
-        function saveIngreso() {
-            const t = document.getElementById('ingreso-type').value, d = document.getElementById('ingreso-date').value, c = document.getElementById('ingreso-concept').value;
-            if(!d || !c) return alert('Completa fecha y concepto'); if(new Date(d).getFullYear() < 2026) return alert('Solo registros desde 2026');
-            let r = { id: 'ing_' + Date.now() + '_' + Math.floor(Math.random() * 10000), type: t, date: d, concept: c, students: [] };
-            if(t === 'fijo') { const a = parseFloat(document.getElementById('ingreso-amount').value); if(!a) return alert('Ingresa el monto'); r.amount = a; logActivity('INGRESO_FIJO', `${c} - ${formatCLP(a)}`); }
-            else {
-                const ap = parseFloat(document.getElementById('ingreso-amount-per').value); if(!ap) return alert('Ingresa monto por alumno'); r.amountPer = ap;
-                document.querySelectorAll('#ingreso-students-checks .student-check').forEach(div => { const id = parseInt(div.querySelector('input').value), p = div.querySelector('input').checked, e = div.querySelector('.exempt-toggle').classList.contains('active'); if(p) r.students.push({ id, paid: true, exempt: e }); });
-                const payingStudents = r.students.filter(s => !s.exempt);
-                r.amount = ap * payingStudents.length;
-                logActivity('INGRESO_POR_ALUMNO', `${c} - ${payingStudents.length} pagando (eximidos: ${r.students.length - payingStudents.length}) - ${formatCLP(r.amount)}`);
-            }
-            appData.ingresos.push(r); closeModal('modal-ingreso'); saveData();
-        }
+        function saveIngreso() { const t = document.getElementById('ingreso-type').value, d = document.getElementById('ingreso-date').value, c = document.getElementById('ingreso-concept').value; if(!d || !c) return alert('Completa fecha y concepto'); if(new Date(d).getFullYear() < 2026) return alert('Solo registros desde 2026'); let r = { id: 'ing_' + Date.now() + '_' + Math.floor(Math.random() * 10000), type: t, date: d, concept: c, students: [] }; if(t === 'fijo') { const a = parseFloat(document.getElementById('ingreso-amount').value); if(!a) return alert('Ingresa el monto'); r.amount = a; logActivity('INGRESO_FIJO', `${c} - ${formatCLP(a)}`); } else { const ap = parseFloat(document.getElementById('ingreso-amount-per').value); if(!ap) return alert('Ingresa monto por alumno'); r.amountPer = ap; document.querySelectorAll('#ingreso-students-checks .student-check').forEach(div => { const id = parseInt(div.querySelector('input').value), p = div.querySelector('input').checked, e = div.querySelector('.exempt-toggle').classList.contains('active'); if(p) r.students.push({ id, paid: true, exempt: e }); }); const payingStudents = r.students.filter(s => !s.exempt); r.amount = ap * payingStudents.length; logActivity('INGRESO_POR_ALUMNO', `${c} - ${payingStudents.length} pagando (eximidos: ${r.students.length - payingStudents.length}) - ${formatCLP(r.amount)}`); } appData.ingresos.push(r); closeModal('modal-ingreso'); saveData(); }
         function deleteIngreso(id) { if(!confirm('¿Eliminar?')) return; const ing = appData.ingresos.find(i => i.id === id); appData.ingresos = appData.ingresos.filter(i => i.id !== id); logActivity('ELIMINAR_INGRESO', `Eliminó: ${ing?.concept}`); saveData(); }
         function editIngreso(id) { const i = appData.ingresos.find(x => x.id === id); document.getElementById('ingreso-type').value = i.type; document.getElementById('ingreso-date').value = i.date; document.getElementById('ingreso-concept').value = i.concept; document.getElementById('ingreso-amount').value = i.type === 'fijo' ? i.amount : ''; document.getElementById('ingreso-amount-per').value = i.type === 'cuota' ? i.amountPer : ''; toggleIngresoFields(); renderStudentChecks('ingreso-students-checks', i.students); document.querySelector('#modal-ingreso .btn-primary').onclick = () => updateIngreso(id); document.getElementById('modal-ingreso').classList.add('active'); }
-        function updateIngreso(id) {
-            const idx = appData.ingresos.findIndex(i => i.id === id), i = appData.ingresos[idx];
-            i.date = document.getElementById('ingreso-date').value; i.concept = document.getElementById('ingreso-concept').value;
-            if(i.type === 'fijo') i.amount = parseFloat(document.getElementById('ingreso-amount').value);
-            else {
-                i.amountPer = parseFloat(document.getElementById('ingreso-amount-per').value); i.students = [];
-                document.querySelectorAll('#ingreso-students-checks .student-check').forEach(div => { const sid = parseInt(div.querySelector('input').value), p = div.querySelector('input').checked, e = div.querySelector('.exempt-toggle').classList.contains('active'); if(p) i.students.push({ id: sid, paid: true, exempt: e }); });
-                const payingStudents = i.students.filter(s => !s.exempt);
-                i.amount = i.amountPer * payingStudents.length;
-            }
-            logActivity('EDITAR_INGRESO', `Editó: ${i.concept}`); closeModal('modal-ingreso'); saveData();
-        }
+        function updateIngreso(id) { const idx = appData.ingresos.findIndex(i => i.id === id), i = appData.ingresos[idx]; i.date = document.getElementById('ingreso-date').value; i.concept = document.getElementById('ingreso-concept').value; if(i.type === 'fijo') i.amount = parseFloat(document.getElementById('ingreso-amount').value); else { i.amountPer = parseFloat(document.getElementById('ingreso-amount-per').value); i.students = []; document.querySelectorAll('#ingreso-students-checks .student-check').forEach(div => { const sid = parseInt(div.querySelector('input').value), p = div.querySelector('input').checked, e = div.querySelector('.exempt-toggle').classList.contains('active'); if(p) i.students.push({ id: sid, paid: true, exempt: e }); }); const payingStudents = i.students.filter(s => !s.exempt); i.amount = i.amountPer * payingStudents.length; } logActivity('EDITAR_INGRESO', `Editó: ${i.concept}`); closeModal('modal-ingreso'); saveData(); }
 
         function renderCuotas() { const c = document.getElementById('cuotas-list'), tm = `2026-${currentMonth}`, cu = appData.cuotas.find(x => x.month === tm); if(!cu) { c.innerHTML = '<div style="text-align:center; padding:3rem; color:var(--text-light);"><p style="margin-bottom:1rem;">Error: No hay cuota registrada para este mes.</p></div>'; return; } let h = `<div style="margin-bottom:1.5rem; padding:1rem; background:var(--hover); border-radius:8px; display:flex; justify-content:space-between; align-items:center;"><div><strong style="font-size:1.1rem;">Cuota: ${formatCLP(cu.amountPer)}</strong><div style="font-size:0.9rem; color:var(--text-light);">Total recaudado: ${formatCLP(cu.total)}</div></div><div style="font-size:1.2rem; font-weight:bold; color:var(--primary);">${cu.paidStudents.length}/${appData.students.length}</div></div>`; h += '<div style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">'; h += appData.students.map(s => { const ip = cu.paidStudents.includes(s.id); return `<div class="student-row ${ip?'paid-row':''}" style="${ip?'background:#f0fdf4;':''}"><div class="student-info"><div class="student-num" style="${ip?'background:var(--success);':''}">${s.id}</div><div><div class="student-name">${s.last} ${s.first}</div>${ip?'<span class="badge badge-paid">Pagado</span>':'<span class="badge badge-pending">Pendiente</span>'}</div></div>${ip?`<button class="btn btn-sm btn-danger" onclick="deleteCuotaPayment('${cu.month}', ${s.id})">Eliminar Pago</button>`:`<button class="btn btn-sm btn-success" onclick="addCuotaPayment('${cu.month}', ${s.id})">Pagar</button>`}</div>`; }).join(''); h += '</div>'; c.innerHTML = h; }
         function addCuotaPayment(m, sid) { const cu = appData.cuotas.find(c => c.month === m); if(!cu.paidStudents.includes(sid)) { cu.paidStudents.push(sid); const ap = cu.amountPer || appData.config.cuotaAmount || 10000; cu.amountPer = ap; cu.total = ap * cu.paidStudents.length; logActivity('PAGO_CUOTA', `${appData.students.find(s=>s.id===sid).last} ${appData.students.find(s=>s.id===sid).first} pagó cuota ${MONTH_NAMES[m.split('-')[1]]}`); saveData(); } }
         function deleteCuotaPayment(m, sid) { if(!confirm('¿Eliminar pago?')) return; const cu = appData.cuotas.find(c => c.month === m); cu.paidStudents = cu.paidStudents.filter(id => id !== sid); const ap = cu.amountPer || appData.config.cuotaAmount || 10000; cu.amountPer = ap; cu.total = ap * cu.paidStudents.length; logActivity('ELIMINAR_PAGO_CUOTA', `Eliminó pago de ${appData.students.find(s=>s.id===sid).last} ${appData.students.find(s=>s.id===sid).first} cuota ${MONTH_NAMES[m.split('-')[1]]}`); saveData(); }
 
-        function renderEgresos() {
-            const tb = document.getElementById('egresos-table-body');
-            if(appData.egresos.length === 0) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--text-light);">No hay gastos registrados</td></tr>'; return; }
-            tb.innerHTML = appData.egresos.sort((a,b) => new Date(b.date) - new Date(a.date)).map(e => `
-                <tr><td>${e.date}</td><td>${e.desc}</td><td>${formatCLP(e.amount)}</td><td>${e.file ? `<button class="btn-view-file" onclick="openReceiptPreview(${e.id})">📄 Ver Boleta</button>` : '-'}</td><td style="display:flex; gap:0.5rem;"><button class="btn btn-sm btn-primary" onclick="openEgresoModal(${e.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="deleteEgreso(${e.id})">Eliminar</button></td></tr>
-            `).join('');
-        }
+        function renderEgresos() { const tb = document.getElementById('egresos-table-body'); if(appData.egresos.length === 0) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--text-light);">No hay gastos registrados</td></tr>'; return; } tb.innerHTML = appData.egresos.sort((a,b) => new Date(b.date) - new Date(a.date)).map(e => `<tr><td>${e.date}</td><td>${e.desc}</td><td>${formatCLP(e.amount)}</td><td>${e.file ? `<button class="btn-view-file" onclick="openReceiptPreview(${e.id})">📄 Ver Boleta</button>` : '-'}</td><td style="display:flex; gap:0.5rem;"><button class="btn btn-sm btn-primary" onclick="openEgresoModal(${e.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="deleteEgreso(${e.id})">Eliminar</button></td></tr>`).join(''); }
         function openEgresoModal(eid = null) { document.getElementById('egreso-edit-id').value = eid || ''; document.getElementById('egreso-date').value = new Date().toISOString().split('T')[0]; document.getElementById('egreso-amount').value = ''; document.getElementById('egreso-desc').value = ''; document.getElementById('egreso-file').value = ''; document.getElementById('file-preview-img').style.display = 'none'; document.getElementById('file-label').textContent = 'Clic para subir archivo'; document.getElementById('btn-remove-img').style.display = 'none'; currentFileData = null; if(eid) { const e = appData.egresos.find(x => x.id === eid); document.getElementById('egreso-date').value = e.date; document.getElementById('egreso-amount').value = e.amount; document.getElementById('egreso-desc').value = e.desc; if(e.file) { currentFileData = e.file; document.getElementById('file-preview-img').src = safeBase64(e.file); document.getElementById('file-preview-img').style.display = 'block'; document.getElementById('file-label').textContent = 'Archivo actual'; document.getElementById('btn-remove-img').style.display = 'inline-flex'; } } document.getElementById('modal-egreso').classList.add('active'); }
         function removeImage() { currentFileData = null; document.getElementById('egreso-file').value = ''; document.getElementById('file-preview-img').style.display = 'none'; document.getElementById('file-label').textContent = 'Clic para subir archivo'; document.getElementById('btn-remove-img').style.display = 'none'; }
         function previewFile(inp) { const f = inp.files[0]; if(!f) return; if(f.size > 1024 * 500) { alert('⚠️ La imagen es muy grande. Por favor sube una foto menor a 500KB o reduce la resolución.'); inp.value = ''; return; } const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.onload = () => { const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const MAX = 800; let w = img.width, h = img.height; if(w > h) { if(w > MAX) { h *= MAX/w; w = MAX; } } else { if(h > MAX) { w *= MAX/h; h = MAX; } } canvas.width = w; canvas.height = h; ctx.drawImage(img, 0, 0, w, h); currentFileData = canvas.toDataURL('image/jpeg', 0.7); const preview = document.getElementById('file-preview-img'); preview.src = currentFileData; preview.style.display = 'block'; document.getElementById('file-label').textContent = f.name; document.getElementById('btn-remove-img').style.display = 'inline-flex'; }; img.src = e.target.result; }; reader.readAsDataURL(f); }
         function saveEgreso() { const id = document.getElementById('egreso-edit-id').value, d = document.getElementById('egreso-date').value, a = parseFloat(document.getElementById('egreso-amount').value), desc = document.getElementById('egreso-desc').value; if(!d || !a || !desc) { alert('Completa todos los campos: fecha, monto y descripción'); return; } if(new Date(d).getFullYear() < 2026) { alert('Solo se permiten registros desde el año 2026'); return; } const rec = { id: id ? parseInt(id) : Date.now(), date: d, amount: a, desc: desc, file: currentFileData }; if(id) { const idx = appData.egresos.findIndex(e => e.id === parseInt(id)); if(idx !== -1) { appData.egresos[idx] = rec; logActivity('EDITAR_EGRESO', `Editó gasto: ${desc}`); } } else { appData.egresos.push(rec); logActivity('AGREGAR_EGRESO', `${desc} - ${formatCLP(a)}`); } closeModal('modal-egreso'); saveData(); alert('Gasto guardado correctamente'); }
         function deleteEgreso(id) { if(!confirm('¿Estás seguro de eliminar este gasto?')) return; appData.egresos = appData.egresos.filter(x => x.id !== id); logActivity('ELIMINAR_EGRESO', `Eliminó gasto`); saveData(); }
 
-        function renderTransparencia() {
-            const te = appData.ingresos.reduce((s,i) => s+i.amount, 0), tc = appData.cuotas.reduce((s,c) => s+c.total, 0), ti = te+tc, tg = appData.egresos.reduce((s,e) => s+e.amount, 0);
-            document.getElementById('trans-ingresos').textContent = formatCLP(ti); document.getElementById('trans-egresos').textContent = formatCLP(tg);
-            const bal = ti-tg; document.getElementById('trans-balance').textContent = formatCLP(bal); document.getElementById('trans-balance').style.color = bal >= 0 ? 'var(--success)' : 'var(--danger)';
-            const utd = ALL_MONTHS.map(m => { const c = appData.cuotas.find(x => x.month === `2026-${m}`); return c ? c.paidStudents.length : 0; });
-            createChart('transChartUpToDate', { type: 'bar', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES[m]), datasets: [{ label: 'Alumnos al Día', data: utd, backgroundColor: '#10b981', borderRadius: 6, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', color: document.body.getAttribute('data-theme') === 'dark' ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 14 }, formatter: v => v > 0 ? v : '' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 5, color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }, grid: { color: document.body.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0' } }, x: { ticks: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }, grid: { display: false } } } } });
-            const dk = document.body.getAttribute('data-theme') === 'dark';
-            createChart('transChartGlobal', { type: 'bar', data: { labels: ['Ingresos Totales','Egresos Totales'], datasets: [{ label: 'Monto', data: [ti,tg], backgroundColor: ['#10b981','#ef4444'], borderRadius: 8, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', offset: 5, color: dk ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 14 }, formatter: v => formatCLP(v) } }, scales: { y: { beginAtZero: true, ticks: { color: dk ? '#94a3b8' : '#64748b', callback: v => '$'+(v/1000)+'k' }, grid: { color: dk ? '#334155' : '#e2e8f0' } }, x: { ticks: { color: dk ? '#94a3b8' : '#64748b' }, grid: { display: false } } } } });
-            const me = appData.egresos.filter(e => e.date.startsWith(`2026-${currentMonth}`));
-            document.getElementById('trans-expenses-body').innerHTML = me.map(e => `<tr><td>${e.desc}</td><td><span class="badge badge-pending">Gasto</span></td><td>${formatCLP(e.amount)}</td><td>${e.file ? `<button class="btn-view-file" onclick="openReceiptPreview(${e.id})">📄 Ver Boleta</button>` : '-'}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center; color:var(--text-light); padding:1.5rem;">Sin gastos este mes</td></tr>';
-        }
+        function renderTransparencia() { const te = appData.ingresos.reduce((s,i) => s+i.amount, 0), tc = appData.cuotas.reduce((s,c) => s+c.total, 0), ti = te+tc, tg = appData.egresos.reduce((s,e) => s+e.amount, 0); document.getElementById('trans-ingresos').textContent = formatCLP(ti); document.getElementById('trans-egresos').textContent = formatCLP(tg); const bal = ti-tg; document.getElementById('trans-balance').textContent = formatCLP(bal); document.getElementById('trans-balance').style.color = bal >= 0 ? 'var(--success)' : 'var(--danger)'; const utd = ALL_MONTHS.map(m => { const c = appData.cuotas.find(x => x.month === `2026-${m}`); return c ? c.paidStudents.length : 0; }); createChart('transChartUpToDate', { type: 'bar', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES[m]), datasets: [{ label: 'Alumnos al Día', data: utd, backgroundColor: '#10b981', borderRadius: 6, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', color: document.body.getAttribute('data-theme') === 'dark' ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 14 }, formatter: v => v > 0 ? v : '' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 5, color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }, grid: { color: document.body.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0' } }, x: { ticks: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }, grid: { display: false } } } } }); const dk = document.body.getAttribute('data-theme') === 'dark'; createChart('transChartGlobal', { type: 'bar', data: { labels: ['Ingresos Totales','Egresos Totales'], datasets: [{ label: 'Monto', data: [ti,tg], backgroundColor: ['#10b981','#ef4444'], borderRadius: 8, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', offset: 5, color: dk ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 14 }, formatter: v => formatCLP(v) } }, scales: { y: { beginAtZero: true, ticks: { color: dk ? '#94a3b8' : '#64748b', callback: v => '$'+(v/1000)+'k' }, grid: { color: dk ? '#334155' : '#e2e8f0' } }, x: { ticks: { color: dk ? '#94a3b8' : '#64748b' }, grid: { display: false } } } } }); const me = appData.egresos.filter(e => e.date.startsWith(`2026-${currentMonth}`)); document.getElementById('trans-expenses-body').innerHTML = me.map(e => `<tr><td>${e.desc}</td><td><span class="badge badge-pending">Gasto</span></td><td>${formatCLP(e.amount)}</td><td>${e.file ? `<button class="btn-view-file" onclick="openReceiptPreview(${e.id})">📄 Ver Boleta</button>` : '-'}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center; color:var(--text-light); padding:1.5rem;">Sin gastos este mes</td></tr>'; }
 
         function exportToPDF() { Object.values(charts).forEach(c => { if(c && typeof c.render === 'function') c.render(); }); const el = document.getElementById('transparency-content'), ot = document.body.getAttribute('data-theme'); document.body.setAttribute('data-theme', 'light'); el.classList.add('pdf-export'); setTimeout(() => { const opt = { margin: 0.5, filename: `Transparencia_3A_${MONTH_NAMES[currentMonth]}_2026.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 1.5, useCORS: true, logging: false, allowTaint: true }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }, pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } }; html2pdf().set(opt).from(el).save().then(() => { el.classList.remove('pdf-export'); if(ot === 'dark') document.body.setAttribute('data-theme', 'dark'); else document.body.removeAttribute('data-theme'); logActivity('EXPORTAR_PDF', `Exportó transparencia ${MONTH_NAMES[currentMonth]} 2026`); }); }, 1000); }
-        function showShareModal() { document.getElementById('share-link').value = window.location.origin + '/transparencia.html?curso=3a'; document.getElementById('modal-share').classList.add('active'); }
+        function showShareModal() {
+            const publicLink = window.location.origin + window.location.pathname + '?view=transparencia';
+            document.getElementById('share-link').value = publicLink;
+            document.getElementById('modal-share').classList.add('active');
+        }
         function copyShareLink() { const i = document.getElementById('share-link'); i.select(); document.execCommand('copy'); alert('Link copiado al portapapeles'); }
 
         function renderMovimientos() { const fm = document.getElementById('filter-month').value, tb = document.getElementById('movimientos-table-body'); let fl = appData.logs; if(fm !== 'all') fl = appData.logs.filter(l => { const d = new Date(l.ts); return String(d.getMonth()+1).padStart(2,'0') === fm && d.getFullYear() === 2026; }); if(fl.length === 0) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--text-light);">Sin registros de actividad</td></tr>'; return; } tb.innerHTML = fl.map((l,idx) => { const d = new Date(l.ts), cd = currentUser === 'I.ARELLUNA', oi = appData.logs.indexOf(l); return `<tr><td>${d.toLocaleDateString('es-CL')} ${d.toLocaleTimeString('es-CL')}</td><td><span class="badge" style="background:#e0f2fe; color:#0284c7;">${l.user}</span></td><td>${l.action}</td><td>${l.details}</td><td>${cd ? `<button class="btn btn-sm btn-danger" onclick="deleteLog(${oi})">Eliminar</button>` : '-'}</td></tr>`; }).join(''); }
