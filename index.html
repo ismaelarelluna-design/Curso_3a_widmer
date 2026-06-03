@@ -94,14 +94,24 @@
 
         .card { background: var(--card); padding: 1.5rem; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 1.5rem; border: 1px solid var(--border); }
         .card h3 { margin-bottom: 1rem; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .stat-card { background: var(--card); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); position: relative; overflow: hidden; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: var(--card); padding: 1.2rem; border-radius: var(--radius); border: 1px solid var(--border); position: relative; overflow: hidden; }
         .stat-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
         .stat-card.income::before { background: var(--success); } .stat-card.expense::before { background: var(--danger); }
         .stat-card.balance::before { background: var(--primary); } .stat-card.students::before { background: var(--warning); }
-        .stat-card h4 { font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        .stat-card .value { font-size: 2rem; font-weight: bold; color: var(--text); }
-        .stat-card .subtext { font-size: 0.85rem; color: var(--text-light); margin-top: 0.3rem; }
+        .stat-card.metric::before { background: var(--info); }
+        .stat-card h4 { font-size: 0.8rem; color: var(--text-light); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .value { font-size: 1.6rem; font-weight: bold; color: var(--text); }
+        .stat-card .subtext { font-size: 0.75rem; color: var(--text-light); margin-top: 0.2rem; }
+
+        /* NUEVOS ESTILOS DASHBOARD */
+        .quick-actions { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .trend { font-size: 0.8rem; margin-left: 0.5rem; } .trend.up { color: var(--success); } .trend.down { color: var(--danger); }
+        .progress-info { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.3rem; }
+        .progress-container { background: var(--border); border-radius: 10px; height: 10px; width: 100%; margin-top: 0.5rem; }
+        .progress-bar { background: var(--success); height: 100%; border-radius: 10px; transition: width 0.3s; }
+        .health-indicator { display: flex; gap: 1.5rem; padding: 0.8rem; background: var(--bg); border-radius: 8px; margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-light); flex-wrap: wrap; align-items: center; }
+        .activity-list { max-height: 200px; overflow-y: auto; } .activity-item { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; } .activity-item:last-child { border-bottom: none; } .activity-time { color: var(--text-light); font-size: 0.75rem; }
 
         .chart-container { position: relative; height: 300px; margin: 1.5rem 0; }
         .chart-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
@@ -111,8 +121,6 @@
         .badge { padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
         .badge-paid { background: #dcfce7; color: var(--success); } .badge-pending { background: #fee2e2; color: var(--danger); }
         .badge-exempt { background: #e0f2fe; color: #0284c7; }
-        .progress-container { background: var(--border); border-radius: 10px; height: 8px; width: 100%; margin-top: 0.5rem; }
-        .progress-bar { background: var(--success); height: 100%; border-radius: 10px; transition: width 0.3s; }
 
         .student-row { display: flex; justify-content: space-between; align-items: center; padding: 0.9rem; border-bottom: 1px solid var(--border); transition: background 0.2s; }
         .student-row:hover { background: var(--hover); } .student-row:last-child { border-bottom: none; }
@@ -185,6 +193,8 @@
             .month-btn { padding: 0.5rem 0.9rem; font-size: 0.85rem; }
             .transparency-header { flex-direction: column; align-items: flex-start; }
             .bank-info-grid { grid-template-columns: repeat(2, 1fr); }
+            .stats-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+            .quick-actions { justify-content: center; }
         }
         @media (min-width: 1025px) {
             .sidebar { position: relative; left: 0; } .menu-overlay { display: none !important; }
@@ -254,35 +264,66 @@
 
             <div class="content-area">
                 <div id="tab-dashboard" class="tab-content active">
-                    <div class="stats-grid">
-                        <div class="stat-card income"><h4>Ingresos Totales</h4><div class="value" id="dash-ingresos">$0</div><div class="subtext">GC + Extras</div></div>
-                        <div class="stat-card expense"><h4>Egresos Totales</h4><div class="value" id="dash-egresos">$0</div><div class="subtext">Fijos + Variables</div></div>
-                        <div class="stat-card balance"><h4>Balance</h4><div class="value" id="dash-balance">$0</div><div class="subtext">Disponible</div></div>
-                        <div class="stat-card students"><h4>Alumnos al Día</h4><div class="value" id="dash-students">0/41</div><div class="subtext">Cuota mensual</div></div>
+                    <!-- 4. BOTONES DE ACCIÓN RÁPIDA -->
+                    <div class="quick-actions">
+                        <button class="btn btn-sm btn-success" onclick="switchTab('cuotas')">➕ Registrar Pago</button>
+                        <button class="btn btn-sm btn-danger" onclick="openEgresoModal()">💸 Agregar Gasto</button>
+                        <button class="btn btn-sm btn-info" onclick="showShareModal()">🔗 Compartir Transparencia</button>
                     </div>
+
+                    <!-- 1. INDICADORES CON TENDENCIA -->
+                    <div class="stats-grid">
+                        <div class="stat-card income"><h4>Ingresos Totales <span class="trend" id="trend-ingresos"></span></h4><div class="value" id="dash-ingresos">$0</div><div class="subtext">GC + Extras</div></div>
+                        <div class="stat-card expense"><h4>Egresos Totales <span class="trend" id="trend-egresos"></span></h4><div class="value" id="dash-egresos">$0</div><div class="subtext">Fijos + Variables</div></div>
+                        <div class="stat-card balance"><h4>Balance <span class="trend" id="trend-balance"></span></h4><div class="value" id="dash-balance">$0</div><div class="subtext">Disponible</div></div>
+                        <div class="stat-card students"><h4>Alumnos al Día <span class="trend" id="trend-students"></span></h4><div class="value" id="dash-students">0/41</div><div class="subtext">Cuota mensual</div></div>
+                    </div>
+
+                    <!-- 3. BARRA DE PROGRESO MENSUAL -->
+                    <div class="card">
+                        <h3>Meta Mensual - <span id="progress-month-label">Mayo 2026</span></h3>
+                        <div class="progress-info">
+                            <span id="progress-text">0% recaudado</span>
+                            <span id="progress-amount">$0 / $0</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+                        </div>
+                    </div>
+
                     <div class="chart-row">
                         <div class="card" style="flex:2;"><h3>Ingresos vs Egresos - <span id="chart-month-label">Mayo 2026</span></h3><div class="chart-container"><canvas id="chartIncomeExpense"></canvas></div></div>
                         <div class="card" style="flex:1;"><h3>Alumnos Pagados vs Total</h3><div class="chart-container"><canvas id="chartPaidStudents"></canvas></div></div>
                     </div>
                     <div class="card"><h3>Evolución Anual 2026</h3><div class="chart-container" style="height:250px;"><canvas id="chartAnnual"></canvas></div></div>
+
+                    <!-- 2. MINI FEED DE ACTIVIDAD RECIENTE -->
+                    <div class="card">
+                        <h3>🕒 Actividad Reciente</h3>
+                        <div class="activity-list" id="recent-activity"></div>
+                    </div>
+
+                    <!-- 5. INDICADOR DE SALUD Y SINCRONIZACIÓN -->
+                    <div class="health-indicator">
+                        <span id="health-sync">🔄 Última sync: -</span>
+                        <span id="health-size">📦 Tamaño: -</span>
+                        <span id="health-status" class="badge badge-paid">🔋 Firebase: Activo</span>
+                    </div>
                 </div>
 
+                <!-- RESTO DE PESTAÑAS (IGUALES) -->
                 <div id="tab-curso" class="tab-content">
                     <div class="card"><h3>Listado de Alumnos <div style="display:flex; gap:0.5rem;"><button class="btn btn-sm btn-primary" onclick="openEditStudentModal()">Editar Masivo</button><button class="btn btn-sm btn-success" onclick="openAddStudentModal()">+ Agregar Alumno</button></div></h3><div id="students-list-curso"></div></div>
                 </div>
-
                 <div id="tab-ingresos" class="tab-content">
                     <div class="card"><h3>Ingresos Extra <button class="btn btn-sm btn-primary" onclick="openIngresoModal()">+ Nuevo Ingreso</button></h3><div id="ingresos-list"></div></div>
                 </div>
-
                 <div id="tab-cuotas" class="tab-content">
                     <div class="card"><h3>Pago de Cuotas - <span id="cuota-month-label">Mayo 2026</span></h3><div id="cuotas-list"></div></div>
                 </div>
-
                 <div id="tab-egresos" class="tab-content">
                     <div class="card"><h3>Gastos <button class="btn btn-sm btn-danger" onclick="openEgresoModal()">+ Agregar Gasto</button></h3><table><thead><tr><th>Fecha</th><th>Descripción</th><th>Monto</th><th>Archivo</th><th>Acciones</th></tr></thead><tbody id="egresos-table-body"></tbody></table></div>
                 </div>
-
                 <div id="tab-transparencia" class="tab-content">
                     <div id="transparency-content">
                         <div class="transparency-header">
@@ -303,10 +344,13 @@
                                 <div class="bank-item"><label>Correo</label><div class="value">anlumore@gmail.com</div></div>
                             </div>
                         </div>
-                        <div class="stats-grid">
-                            <div class="stat-card income"><h4>Total Ingresos</h4><div class="value" id="trans-ingresos" style="color:var(--success);">$0</div></div>
-                            <div class="stat-card expense"><h4>Total Egresos</h4><div class="value" id="trans-egresos" style="color:var(--danger);">$0</div></div>
-                            <div class="stat-card balance"><h4>Balance General</h4><div class="value" id="trans-balance">$0</div></div>
+                        <div class="stats-grid" id="trans-stats-grid">
+                            <div class="stat-card income"><h4>Total Cuotas</h4><div class="value" id="trans-cuotas">$0</div><div class="subtext">Recaudado mensualidades</div></div>
+                            <div class="stat-card income"><h4>Total Ingresos Extra</h4><div class="value" id="trans-extras">$0</div><div class="subtext">Eventos, rifas, etc.</div></div>
+                            <div class="stat-card metric"><h4>% Recaudación Anual (Cuotas)</h4><div class="value" id="trans-porcentaje">0%</div><div class="subtext">Meta: 100% del año</div></div>
+                            <div class="stat-card metric"><h4>Promedio Extra/Alumno</h4><div class="value" id="trans-promedio">$0</div><div class="subtext">Participación individual</div></div>
+                            <div class="stat-card expense"><h4>Total Egresos</h4><div class="value" id="trans-egresos">$0</div><div class="subtext">Inversiones del curso</div></div>
+                            <div class="stat-card balance"><h4>Balance General</h4><div class="value" id="trans-balance">$0</div><div class="subtext">Ingresos - Egresos</div></div>
                         </div>
                         <div class="chart-row">
                             <div class="card"><h3>Índice de Cuotas al Día por Mes</h3><div class="chart-container"><canvas id="transChartUpToDate"></canvas></div></div>
@@ -315,7 +359,6 @@
                         <div class="card"><h3>Detalle de Gastos - <span id="trans-expenses-month">Mayo 2026</span></h3><table><thead><tr><th>Descripción</th><th>Categoría</th><th>Monto</th><th>Comprobante</th></tr></thead><tbody id="trans-expenses-body"></tbody></table></div>
                     </div>
                 </div>
-
                 <div id="tab-movimientos" class="tab-content">
                     <div class="card">
                         <h3>Registro de Actividad</h3>
@@ -324,7 +367,6 @@
                         <table><thead><tr><th>Fecha/Hora</th><th>Usuario</th><th>Acción</th><th>Detalle</th><th>Acciones</th></tr></thead><tbody id="movimientos-table-body"></tbody></table>
                     </div>
                 </div>
-
                 <div id="tab-config" class="tab-content">
                     <h2 style="margin-bottom:1.5rem; font-size:1.8rem;">Configuración</h2>
                     <p style="color:var(--text-light); margin-bottom:2rem;">Ajustes del sistema</p>
@@ -338,6 +380,7 @@
         </main>
     </div>
 
+    <!-- MODALES (IGUALES) -->
     <div id="modal-edit-student" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-edit-student')">&times;</span><h3>Editar Alumno</h3><input type="hidden" id="edit-student-id"><div class="input-group"><label>Apoderado</label><input type="text" id="edit-guard"></div><div class="input-group"><label>Teléfono</label><input type="text" id="edit-phone"></div><button class="btn btn-primary" onclick="saveStudentEdit()">Guardar</button></div></div>
     <div id="modal-add-student" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-add-student')">&times;</span><h3>Agregar Nuevo Alumno</h3><div class="form-row"><div class="input-group"><label>Apellido</label><input type="text" id="add-student-last"></div><div class="input-group"><label>Nombres</label><input type="text" id="add-student-first"></div></div><div class="input-group"><label>Apoderado</label><input type="text" id="add-student-guard"></div><div class="input-group"><label>Teléfono</label><input type="text" id="add-student-phone"></div><button class="btn btn-success" onclick="saveNewStudent()">Agregar Alumno</button></div></div>
     <div id="modal-ingreso" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-ingreso')">&times;</span><h3>Nuevo Ingreso</h3><div class="form-row"><div class="input-group"><label>Tipo</label><select id="ingreso-type" onchange="toggleIngresoFields()"><option value="fijo">Monto Fijo</option><option value="cuota">Monto por Cuota (Alumnos)</option></select></div><div class="input-group"><label>Fecha</label><input type="date" id="ingreso-date"></div></div><div class="input-group"><label>Concepto</label><input type="text" id="ingreso-concept"></div><div id="ingreso-fijo-fields"><div class="input-group"><label>Monto Total ($)</label><input type="number" id="ingreso-amount"></div></div><div id="ingreso-cuota-fields" style="display:none;"><div class="input-group"><label>Monto por Alumno ($)</label><input type="number" id="ingreso-amount-per"></div><div class="input-group"><label>Seleccionar Alumnos</label><div class="checkbox-grid" id="ingreso-students-checks"></div></div></div><button class="btn btn-primary" style="margin-top:1rem;" onclick="saveIngreso()">Guardar</button></div></div>
@@ -370,10 +413,9 @@
         const MONTH_NAMES_SHORT = {"03":"Mar","04":"Abr","05":"May","06":"Jun","07":"Jul","08":"Ago","09":"Sep","10":"Oct","11":"Nov","12":"Dic"};
         const ALL_MONTHS = ['03','04','05','06','07','08','09','10','11','12'];
         let appData = { students: [], ingresos: [], cuotas: [], egresos: [], logs: [], config: { cuotaAmount: 10000, cuotaHistory: [], theme: 'light' }, nextStudentId: 42 };
-        let currentUser = null, currentMonth = '05', charts = {}, currentFileData = null;
+        let currentUser = null, currentMonth = '05', charts = {}, currentFileData = null, lastSyncTime = null;
 
         async function init() {
-            // ✅ MODO PÚBLICO: Detecta URL con ?view=transparencia
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('view') === 'transparencia') {
                 document.getElementById('login-screen').style.display = 'none';
@@ -382,14 +424,11 @@
                 document.getElementById('current-user-display').style.display = 'none';
                 document.getElementById('theme-icon').parentElement.style.display = 'none';
                 currentUser = 'PÚBLICO';
-                
                 document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
                 document.getElementById('tab-transparencia').classList.add('active');
                 document.getElementById('page-title').textContent = 'Transparencia Pública';
-                
                 const now = new Date(); currentMonth = String(now.getMonth() + 1).padStart(2, '0');
                 updateMonthSelector();
-                
                 try {
                     const docRef = db.collection('app_data').doc('curso3a');
                     const docSnap = await docRef.get();
@@ -422,8 +461,8 @@
         function initializeAllMonths() { ALL_MONTHS.forEach(m => { const k=`2026-${m}`; if(!appData.cuotas.find(c=>c.month===k)) appData.cuotas.push({month:k, amountPer:appData.config.cuotaAmount||10000, paidStudents:[], total:0}); }); }
         
         async function saveData() {
-            if (currentUser === 'PÚBLICO') return; // 🛡️ Bloquea escrituras públicas
-            try { await db.collection('app_data').doc('curso3a').set(appData); renderAll(); } 
+            if (currentUser === 'PÚBLICO') return;
+            try { await db.collection('app_data').doc('curso3a').set(appData); lastSyncTime = new Date(); renderAll(); } 
             catch (e) { console.error("Error al guardar en Firebase:", e); alert("❌ No se pudo guardar."); }
         }
 
@@ -433,15 +472,87 @@
         function logout() { localStorage.removeItem(APP_KEY+'_user'); currentUser=null; location.reload(); }
         function toggleTheme() { if (currentUser === 'PÚBLICO') return; const d = document.body.getAttribute('data-theme') === 'dark'; document.body.setAttribute('data-theme', d ? 'light' : 'dark'); document.getElementById('theme-toggle').classList.toggle('active'); appData.config.theme = d ? 'light' : 'dark'; saveData(); updateChartsTheme(); }
         function setMonth(m) { currentMonth = m; updateMonthSelector(); renderAll(); }
-        function updateMonthSelector() { document.querySelectorAll('.month-btn').forEach(b => b.classList.toggle('active', b.dataset.month === currentMonth)); document.getElementById('chart-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('cuota-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('trans-period').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('trans-expenses-month').textContent = `${MONTH_NAMES[currentMonth]} 2026`; }
-        function switchTab(tab) { if (currentUser === 'PÚBLICO') return; // 🛡️ Bloquea navegación pública
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById('tab-'+tab).classList.add('active'); event.currentTarget.classList.add('active'); document.getElementById('sidebar').classList.remove('active'); document.getElementById('menuOverlay').classList.remove('active'); const titles = {'dashboard':'Dashboard General','curso':'Listado del Curso','ingresos':'Ingresos Extra','cuotas':'Pago de Cuotas','egresos':'Gastos','transparencia':'Transparencia','movimientos':'Movimientos','config':'Configuración'}; document.getElementById('page-title').textContent = titles[tab]; renderAll(); }
+        function updateMonthSelector() { document.querySelectorAll('.month-btn').forEach(b => b.classList.toggle('active', b.dataset.month === currentMonth)); document.getElementById('chart-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('cuota-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('trans-period').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('trans-expenses-month').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('progress-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; }
+        function switchTab(tab) { if (currentUser === 'PÚBLICO') return; document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById('tab-'+tab).classList.add('active'); event.currentTarget.classList.add('active'); document.getElementById('sidebar').classList.remove('active'); document.getElementById('menuOverlay').classList.remove('active'); const titles = {'dashboard':'Dashboard General','curso':'Listado del Curso','ingresos':'Ingresos Extra','cuotas':'Pago de Cuotas','egresos':'Gastos','transparencia':'Transparencia','movimientos':'Movimientos','config':'Configuración'}; document.getElementById('page-title').textContent = titles[tab]; renderAll(); }
         function renderAll() { renderDashboard(); renderCurso(); renderIngresos(); renderCuotas(); renderEgresos(); renderTransparencia(); renderMovimientos(); renderConfig(); }
 
         function createChart(cid, cfg) { const ctx = document.getElementById(cid).getContext('2d'); const dk = document.body.getAttribute('data-theme') === 'dark'; cfg.options = cfg.options || {}; cfg.options.plugins = cfg.options.plugins || {}; cfg.options.plugins.legend = cfg.options.plugins.legend || {}; cfg.options.plugins.legend.labels = cfg.options.plugins.legend.labels || {}; cfg.options.plugins.legend.labels.color = dk ? '#94a3b8' : '#64748b'; cfg.options.plugins.datalabels = { anchor: 'end', align: 'end', offset: 0, color: dk ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 12 } }; cfg.options.scales = cfg.options.scales || {}; Object.keys(cfg.options.scales).forEach(s => { if(!cfg.options.scales[s].ticks) cfg.options.scales[s].ticks = {}; cfg.options.scales[s].ticks.color = dk ? '#94a3b8' : '#64748b'; if(!cfg.options.scales[s].grid) cfg.options.scales[s].grid = {}; cfg.options.scales[s].grid.color = dk ? '#334155' : '#e2e8f0'; }); if(charts[cid]) charts[cid].destroy(); charts[cid] = new Chart(ctx, cfg); }
         function updateChartsTheme() { Object.keys(charts).forEach(id => { const c=charts[id]; const dk=document.body.getAttribute('data-theme')==='dark'; if(c.options.plugins.legend?.labels) c.options.plugins.legend.labels.color=dk?'#94a3b8':'#64748b'; if(c.options.scales) Object.keys(c.options.scales).forEach(s=>{if(c.options.scales[s].ticks)c.options.scales[s].ticks.color=dk?'#94a3b8':'#64748b';if(c.options.scales[s].grid)c.options.scales[s].grid.color=dk?'#334155':'#e2e8f0';}); c.update(); }); }
 
-        function renderDashboard() { const tExtras = appData.ingresos.reduce((s,i) => s+i.amount, 0); const tCuotas = appData.cuotas.reduce((s,c) => s+c.total, 0); const tIngr = tExtras + tCuotas; const tEgr = appData.egresos.reduce((s,e) => s+e.amount, 0); document.getElementById('dash-balance').textContent = formatCLP(tIngr - tEgr); document.getElementById('dash-ingresos').textContent = formatCLP(tIngr); document.getElementById('dash-egresos').textContent = formatCLP(tEgr); const cr = appData.cuotas.find(c => c.month === `2026-${currentMonth}`); const pc = cr ? cr.paidStudents.length : 0; document.getElementById('dash-students').textContent = `${pc}/${appData.students.length}`; const inc = ALL_MONTHS.map(m => { const c=appData.cuotas.find(x=>x.month===`2026-${m}`); const e=appData.ingresos.filter(i=>i.date.startsWith(`2026-${m}`)).reduce((s,i)=>s+i.amount,0); return (c?c.total:0)+e; }); const exp = ALL_MONTHS.map(m => appData.egresos.filter(e=>e.date.startsWith(`2026-${m}`)).reduce((s,e)=>s+e.amount,0)); createChart('chartIncomeExpense', { type: 'bar', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES_SHORT[m]), datasets: [{ label: 'Ingresos', data: inc, backgroundColor: '#10b981', borderRadius: 6 }, { label: 'Egresos', data: exp, backgroundColor: '#ef4444', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false } }); createChart('chartPaidStudents', { type: 'doughnut', data: { labels: ['Pagados','Pendientes'], datasets: [{ data: [pc, appData.students.length-pc], backgroundColor: ['#10b981','#ef4444'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, datalabels: { color: document.body.getAttribute('data-theme') === 'dark' ? '#f1f5f9' : '#ffffff', font: { weight: 'bold', size: 14 }, formatter: v => v } } } }); const cd = ALL_MONTHS.map(m => { const c=appData.cuotas.find(x=>x.month===`2026-${m}`); return c?c.total:0; }); createChart('chartAnnual', { type: 'line', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES_SHORT[m]), datasets: [{ label: 'Ingresos Cuotas', data: cd, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6, pointHoverRadius: 8 }, { label: 'Egresos', data: exp, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6, pointHoverRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' } }, datalabels: { anchor: 'end', align: 'top', color: document.body.getAttribute('data-theme') === 'dark' ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 11 }, formatter: v => v > 0 ? formatCLP(v) : '' } }, scales: { y: { beginAtZero: true, ticks: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b', callback: v => '$'+(v/1000)+'k' }, grid: { color: document.body.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0' } }, x: { ticks: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }, grid: { color: document.body.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0' } } } } }); }
+        function getMonthTotal(monthStr, type) {
+            const prefix = `2026-${monthStr}`;
+            let total = 0;
+            if (type === 'income') {
+                total += appData.cuotas.find(c => c.month === prefix)?.total || 0;
+                total += appData.ingresos.filter(i => i.date.startsWith(prefix)).reduce((s,i) => s+i.amount, 0);
+            } else if (type === 'expense') {
+                total += appData.egresos.filter(e => e.date.startsWith(prefix)).reduce((s,e) => s+e.amount, 0);
+            } else if (type === 'students') {
+                total += (appData.cuotas.find(c => c.month === prefix)?.paidStudents.length || 0);
+            }
+            return total;
+        }
+
+        function renderDashboard() {
+            const tExtras = appData.ingresos.reduce((s,i) => s+i.amount, 0);
+            const tCuotas = appData.cuotas.reduce((s,c) => s+c.total, 0);
+            const tIngr = tExtras + tCuotas;
+            const tEgr = appData.egresos.reduce((s,e) => s+e.amount, 0);
+            const cr = appData.cuotas.find(c => c.month === `2026-${currentMonth}`);
+            const pc = cr ? cr.paidStudents.length : 0;
+
+            document.getElementById('dash-balance').textContent = formatCLP(tIngr - tEgr);
+            document.getElementById('dash-ingresos').textContent = formatCLP(tIngr);
+            document.getElementById('dash-egresos').textContent = formatCLP(tEgr);
+            document.getElementById('dash-students').textContent = `${pc}/${appData.students.length}`;
+
+            // 1. TENDENCIAS MENSUALES
+            const prevMonth = ALL_MONTHS[ALL_MONTHS.indexOf(currentMonth) - 1] || null;
+            ['ingresos', 'egresos', 'balance', 'students'].forEach(key => {
+                const el = document.getElementById(`trend-${key}`);
+                if (!prevMonth) { el.textContent = ''; return; }
+                const curr = getMonthTotal(currentMonth, key === 'balance' ? 'income' : key);
+                const prev = getMonthTotal(prevMonth, key === 'balance' ? 'income' : key);
+                const prevBase = key === 'balance' ? (getMonthTotal(prevMonth, 'income') - getMonthTotal(prevMonth, 'expense')) : prev;
+                if (prevBase === 0) { el.textContent = ''; return; }
+                const change = ((curr - prevBase) / Math.abs(prevBase)) * 100;
+                const icon = change >= 0 ? '📈' : '📉';
+                const cls = change >= 0 ? 'up' : 'down';
+                el.innerHTML = `<span class="${cls}">${icon} ${Math.abs(change).toFixed(1)}%</span>`;
+            });
+
+            // 3. BARRA DE PROGRESO MENSUAL
+            const cuotaMensual = appData.config.cuotaAmount || 10000;
+            const goal = appData.students.length * cuotaMensual;
+            const current = cr ? cr.total : 0;
+            const pct = goal > 0 ? (current / goal) * 100 : 0;
+            document.getElementById('progress-text').textContent = `${pct.toFixed(0)}% recaudado`;
+            document.getElementById('progress-amount').textContent = `${formatCLP(current)} / ${formatCLP(goal)}`;
+            document.getElementById('progress-bar').style.width = `${Math.min(pct, 100)}%`;
+
+            // 2. ACTIVIDAD RECIENTE
+            const logs = appData.logs.slice(0, 4);
+            document.getElementById('recent-activity').innerHTML = logs.length ? logs.map(l => {
+                const d = new Date(l.ts);
+                return `<div class="activity-item"><div><strong>${l.action}</strong> - ${l.details}</div><div class="activity-time">${d.toLocaleDateString('es-CL')} ${d.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})}</div></div>`;
+            }).join('') : '<div style="text-align:center; color:var(--text-light); padding:1rem;">Sin actividad reciente</div>';
+
+            // 5. SALUD Y SINCRONIZACIÓN
+            const sizeKB = new Blob([JSON.stringify(appData)]).size / 1024;
+            document.getElementById('health-sync').textContent = `🔄 Última sync: ${lastSyncTime ? lastSyncTime.toLocaleTimeString('es-CL') : '-'}`;
+            document.getElementById('health-size').textContent = `📦 Tamaño: ${sizeKB.toFixed(1)} KB`;
+            const statusEl = document.getElementById('health-status');
+            if (sizeKB > 900) { statusEl.className = 'badge badge-pending'; statusEl.textContent = '⚠️ Cerca del límite (1MB)'; }
+            else { statusEl.className = 'badge badge-paid'; statusEl.textContent = '🔋 Firebase: Activo'; }
+
+            // GRÁFICOS (IGUALES)
+            const inc = ALL_MONTHS.map(m => getMonthTotal(m, 'income'));
+            const exp = ALL_MONTHS.map(m => getMonthTotal(m, 'expense'));
+            createChart('chartIncomeExpense', { type: 'bar', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES_SHORT[m]), datasets: [{ label: 'Ingresos', data: inc, backgroundColor: '#10b981', borderRadius: 6 }, { label: 'Egresos', data: exp, backgroundColor: '#ef4444', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false } });
+            createChart('chartPaidStudents', { type: 'doughnut', data: { labels: ['Pagados','Pendientes'], datasets: [{ data: [pc, appData.students.length-pc], backgroundColor: ['#10b981','#ef4444'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, datalabels: { color: document.body.getAttribute('data-theme') === 'dark' ? '#f1f5f9' : '#ffffff', font: { weight: 'bold', size: 14 }, formatter: v => v } } } });
+            const cd = ALL_MONTHS.map(m => getMonthTotal(m, 'students') * (appData.config.cuotaAmount || 10000));
+            createChart('chartAnnual', { type: 'line', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES_SHORT[m]), datasets: [{ label: 'Ingresos Cuotas', data: cd, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#10b981', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6, pointHoverRadius: 8 }, { label: 'Egresos', data: exp, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#ef4444', pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6, pointHoverRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' } }, datalabels: { anchor: 'end', align: 'top', color: document.body.getAttribute('data-theme') === 'dark' ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 11 }, formatter: v => v > 0 ? formatCLP(v) : '' } }, scales: { y: { beginAtZero: true, ticks: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b', callback: v => '$'+(v/1000)+'k' }, grid: { color: document.body.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0' } }, x: { ticks: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }, grid: { color: document.body.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0' } } } } });
+        }
 
         function renderCurso() { document.getElementById('students-list-curso').innerHTML = appData.students.map(s => `<div class="student-row"><div class="student-info"><div class="student-num">${s.id}</div><div><div class="student-name">${s.last} ${s.first}</div><div class="student-detail">Apoderado: ${s.guard||'-'} | Tel: ${s.phone||'-'}</div></div></div><button class="btn btn-sm btn-primary" onclick="openEditStudentModal(${s.id})">Editar</button></div>`).join(''); }
         function openEditStudentModal(id) { if(id) { const s=appData.students.find(x=>x.id===id); document.getElementById('edit-student-id').value=s.id; document.getElementById('edit-guard').value=s.guard; document.getElementById('edit-phone').value=s.phone; } else { document.getElementById('edit-student-id').value=''; document.getElementById('edit-guard').value=''; document.getElementById('edit-phone').value=''; } document.getElementById('modal-edit-student').classList.add('active'); }
@@ -472,14 +583,39 @@
         function saveEgreso() { const id = document.getElementById('egreso-edit-id').value, d = document.getElementById('egreso-date').value, a = parseFloat(document.getElementById('egreso-amount').value), desc = document.getElementById('egreso-desc').value; if(!d || !a || !desc) { alert('Completa todos los campos: fecha, monto y descripción'); return; } if(new Date(d).getFullYear() < 2026) { alert('Solo se permiten registros desde el año 2026'); return; } const rec = { id: id ? parseInt(id) : Date.now(), date: d, amount: a, desc: desc, file: currentFileData }; if(id) { const idx = appData.egresos.findIndex(e => e.id === parseInt(id)); if(idx !== -1) { appData.egresos[idx] = rec; logActivity('EDITAR_EGRESO', `Editó gasto: ${desc}`); } } else { appData.egresos.push(rec); logActivity('AGREGAR_EGRESO', `${desc} - ${formatCLP(a)}`); } closeModal('modal-egreso'); saveData(); alert('Gasto guardado correctamente'); }
         function deleteEgreso(id) { if(!confirm('¿Estás seguro de eliminar este gasto?')) return; appData.egresos = appData.egresos.filter(x => x.id !== id); logActivity('ELIMINAR_EGRESO', `Eliminó gasto`); saveData(); }
 
-        function renderTransparencia() { const te = appData.ingresos.reduce((s,i) => s+i.amount, 0), tc = appData.cuotas.reduce((s,c) => s+c.total, 0), ti = te+tc, tg = appData.egresos.reduce((s,e) => s+e.amount, 0); document.getElementById('trans-ingresos').textContent = formatCLP(ti); document.getElementById('trans-egresos').textContent = formatCLP(tg); const bal = ti-tg; document.getElementById('trans-balance').textContent = formatCLP(bal); document.getElementById('trans-balance').style.color = bal >= 0 ? 'var(--success)' : 'var(--danger)'; const utd = ALL_MONTHS.map(m => { const c = appData.cuotas.find(x => x.month === `2026-${m}`); return c ? c.paidStudents.length : 0; }); createChart('transChartUpToDate', { type: 'bar', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES[m]), datasets: [{ label: 'Alumnos al Día', data: utd, backgroundColor: '#10b981', borderRadius: 6, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', color: document.body.getAttribute('data-theme') === 'dark' ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 14 }, formatter: v => v > 0 ? v : '' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 5, color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }, grid: { color: document.body.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0' } }, x: { ticks: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }, grid: { display: false } } } } }); const dk = document.body.getAttribute('data-theme') === 'dark'; createChart('transChartGlobal', { type: 'bar', data: { labels: ['Ingresos Totales','Egresos Totales'], datasets: [{ label: 'Monto', data: [ti,tg], backgroundColor: ['#10b981','#ef4444'], borderRadius: 8, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', offset: 5, color: dk ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 14 }, formatter: v => formatCLP(v) } }, scales: { y: { beginAtZero: true, ticks: { color: dk ? '#94a3b8' : '#64748b', callback: v => '$'+(v/1000)+'k' }, grid: { color: dk ? '#334155' : '#e2e8f0' } }, x: { ticks: { color: dk ? '#94a3b8' : '#64748b' }, grid: { display: false } } } } }); const me = appData.egresos.filter(e => e.date.startsWith(`2026-${currentMonth}`)); document.getElementById('trans-expenses-body').innerHTML = me.map(e => `<tr><td>${e.desc}</td><td><span class="badge badge-pending">Gasto</span></td><td>${formatCLP(e.amount)}</td><td>${e.file ? `<button class="btn-view-file" onclick="openReceiptPreview(${e.id})">📄 Ver Boleta</button>` : '-'}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center; color:var(--text-light); padding:1.5rem;">Sin gastos este mes</td></tr>'; }
+        function renderTransparencia() {
+            const tCuotas = appData.cuotas.reduce((s,c) => s+c.total, 0);
+            const tExtras = appData.ingresos.reduce((s,i) => s+i.amount, 0);
+            const tEgresos = appData.egresos.reduce((s,e) => s+e.amount, 0);
+            const balance = (tCuotas + tExtras) - tEgresos;
+            const cuotaMensual = appData.config.cuotaAmount || 10000;
+            const maxCuotasAnual = appData.students.length * cuotaMensual * 10;
+            const porcentajeRecaudacion = maxCuotasAnual > 0 ? ((tCuotas / maxCuotasAnual) * 100).toFixed(1) : 0;
+            const promedioExtra = appData.students.length > 0 ? (tExtras / appData.students.length).toFixed(0) : 0;
+
+            document.getElementById('trans-cuotas').textContent = formatCLP(tCuotas);
+            document.getElementById('trans-extras').textContent = formatCLP(tExtras);
+            document.getElementById('trans-porcentaje').textContent = `${porcentajeRecaudacion}%`;
+            document.getElementById('trans-promedio').textContent = formatCLP(promedioExtra);
+            document.getElementById('trans-egresos').textContent = formatCLP(tEgresos);
+            document.getElementById('trans-balance').textContent = formatCLP(balance);
+            document.getElementById('trans-balance').style.color = balance >= 0 ? 'var(--success)' : 'var(--danger)';
+
+            const utd = ALL_MONTHS.map(m => { const c = appData.cuotas.find(x => x.month === `2026-${m}`); return c ? c.paidStudents.length : 0; });
+            createChart('transChartUpToDate', { type: 'bar', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES[m]), datasets: [{ label: 'Alumnos al Día', data: utd, backgroundColor: '#10b981', borderRadius: 6, borderSkipped: false }] }, options: { 
+                responsive: true, maintainAspectRatio: false, 
+                layout: { padding: { top: 25 } },
+                plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', offset: 8, clip: false, color: document.body.getAttribute('data-theme') === 'dark' ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 14 }, formatter: v => v > 0 ? v : '' } }, 
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 5, color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }, grid: { color: document.body.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0' } }, x: { ticks: { color: document.body.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }, grid: { display: false } } } 
+            } });
+            const dk = document.body.getAttribute('data-theme') === 'dark';
+            createChart('transChartGlobal', { type: 'bar', data: { labels: ['Ingresos Totales','Egresos Totales'], datasets: [{ label: 'Monto', data: [tCuotas+tExtras,tEgresos], backgroundColor: ['#10b981','#ef4444'], borderRadius: 8, borderSkipped: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', offset: 5, color: dk ? '#f1f5f9' : '#1e293b', font: { weight: 'bold', size: 14 }, formatter: v => formatCLP(v) } }, scales: { y: { beginAtZero: true, ticks: { color: dk ? '#94a3b8' : '#64748b', callback: v => '$'+(v/1000)+'k' }, grid: { color: dk ? '#334155' : '#e2e8f0' } }, x: { ticks: { color: dk ? '#94a3b8' : '#64748b' }, grid: { display: false } } } } });
+            const me = appData.egresos.filter(e => e.date.startsWith(`2026-${currentMonth}`));
+            document.getElementById('trans-expenses-body').innerHTML = me.map(e => `<tr><td>${e.desc}</td><td><span class="badge badge-pending">Gasto</span></td><td>${formatCLP(e.amount)}</td><td>${e.file ? `<button class="btn-view-file" onclick="openReceiptPreview(${e.id})">📄 Ver Boleta</button>` : '-'}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center; color:var(--text-light); padding:1.5rem;">Sin gastos este mes</td></tr>';
+        }
 
         function exportToPDF() { Object.values(charts).forEach(c => { if(c && typeof c.render === 'function') c.render(); }); const el = document.getElementById('transparency-content'), ot = document.body.getAttribute('data-theme'); document.body.setAttribute('data-theme', 'light'); el.classList.add('pdf-export'); setTimeout(() => { const opt = { margin: 0.5, filename: `Transparencia_3A_${MONTH_NAMES[currentMonth]}_2026.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 1.5, useCORS: true, logging: false, allowTaint: true }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }, pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } }; html2pdf().set(opt).from(el).save().then(() => { el.classList.remove('pdf-export'); if(ot === 'dark') document.body.setAttribute('data-theme', 'dark'); else document.body.removeAttribute('data-theme'); logActivity('EXPORTAR_PDF', `Exportó transparencia ${MONTH_NAMES[currentMonth]} 2026`); }); }, 1000); }
-        function showShareModal() {
-            const publicLink = window.location.origin + window.location.pathname + '?view=transparencia';
-            document.getElementById('share-link').value = publicLink;
-            document.getElementById('modal-share').classList.add('active');
-        }
+        function showShareModal() { const publicLink = window.location.origin + window.location.pathname + '?view=transparencia'; document.getElementById('share-link').value = publicLink; document.getElementById('modal-share').classList.add('active'); }
         function copyShareLink() { const i = document.getElementById('share-link'); i.select(); document.execCommand('copy'); alert('Link copiado al portapapeles'); }
 
         function renderMovimientos() { const fm = document.getElementById('filter-month').value, tb = document.getElementById('movimientos-table-body'); let fl = appData.logs; if(fm !== 'all') fl = appData.logs.filter(l => { const d = new Date(l.ts); return String(d.getMonth()+1).padStart(2,'0') === fm && d.getFullYear() === 2026; }); if(fl.length === 0) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--text-light);">Sin registros de actividad</td></tr>'; return; } tb.innerHTML = fl.map((l,idx) => { const d = new Date(l.ts), cd = currentUser === 'I.ARELLUNA', oi = appData.logs.indexOf(l); return `<tr><td>${d.toLocaleDateString('es-CL')} ${d.toLocaleTimeString('es-CL')}</td><td><span class="badge" style="background:#e0f2fe; color:#0284c7;">${l.user}</span></td><td>${l.action}</td><td>${l.details}</td><td>${cd ? `<button class="btn btn-sm btn-danger" onclick="deleteLog(${oi})">Eliminar</button>` : '-'}</td></tr>`; }).join(''); }
