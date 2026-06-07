@@ -104,7 +104,6 @@
         .stat-card .value { font-size: 1.6rem; font-weight: bold; color: var(--text); }
         .stat-card .subtext { font-size: 0.75rem; color: var(--text-light); margin-top: 0.2rem; }
 
-        /* NUEVOS ESTILOS DASHBOARD */
         .quick-actions { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
         .trend { font-size: 0.8rem; margin-left: 0.5rem; } .trend.up { color: var(--success); } .trend.down { color: var(--danger); }
         .progress-info { display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-light); margin-bottom: 0.3rem; }
@@ -264,22 +263,17 @@
 
             <div class="content-area">
                 <div id="tab-dashboard" class="tab-content active">
-                    <!-- 4. BOTONES DE ACCIÓN RÁPIDA -->
                     <div class="quick-actions">
                         <button class="btn btn-sm btn-success" onclick="switchTab('cuotas')">➕ Registrar Pago</button>
                         <button class="btn btn-sm btn-danger" onclick="openEgresoModal()">💸 Agregar Gasto</button>
                         <button class="btn btn-sm btn-info" onclick="showShareModal()">🔗 Compartir Transparencia</button>
                     </div>
-
-                    <!-- 1. INDICADORES CON TENDENCIA -->
                     <div class="stats-grid">
                         <div class="stat-card income"><h4>Ingresos Totales <span class="trend" id="trend-ingresos"></span></h4><div class="value" id="dash-ingresos">$0</div><div class="subtext">GC + Extras</div></div>
                         <div class="stat-card expense"><h4>Egresos Totales <span class="trend" id="trend-egresos"></span></h4><div class="value" id="dash-egresos">$0</div><div class="subtext">Fijos + Variables</div></div>
                         <div class="stat-card balance"><h4>Balance <span class="trend" id="trend-balance"></span></h4><div class="value" id="dash-balance">$0</div><div class="subtext">Disponible</div></div>
                         <div class="stat-card students"><h4>Alumnos al Día <span class="trend" id="trend-students"></span></h4><div class="value" id="dash-students">0/41</div><div class="subtext">Cuota mensual</div></div>
                     </div>
-
-                    <!-- 3. BARRA DE PROGRESO MENSUAL -->
                     <div class="card">
                         <h3>Meta Mensual - <span id="progress-month-label">Mayo 2026</span></h3>
                         <div class="progress-info">
@@ -290,20 +284,15 @@
                             <div class="progress-bar" id="progress-bar" style="width:0%"></div>
                         </div>
                     </div>
-
                     <div class="chart-row">
                         <div class="card" style="flex:2;"><h3>Ingresos vs Egresos - <span id="chart-month-label">Mayo 2026</span></h3><div class="chart-container"><canvas id="chartIncomeExpense"></canvas></div></div>
                         <div class="card" style="flex:1;"><h3>Alumnos Pagados vs Total</h3><div class="chart-container"><canvas id="chartPaidStudents"></canvas></div></div>
                     </div>
                     <div class="card"><h3>Evolución Anual 2026</h3><div class="chart-container" style="height:250px;"><canvas id="chartAnnual"></canvas></div></div>
-
-                    <!-- 2. MINI FEED DE ACTIVIDAD RECIENTE -->
                     <div class="card">
                         <h3>🕒 Actividad Reciente</h3>
                         <div class="activity-list" id="recent-activity"></div>
                     </div>
-
-                    <!-- 5. INDICADOR DE SALUD Y SINCRONIZACIÓN -->
                     <div class="health-indicator">
                         <span id="health-sync">🔄 Última sync: -</span>
                         <span id="health-size">📦 Tamaño: -</span>
@@ -311,19 +300,22 @@
                     </div>
                 </div>
 
-                <!-- RESTO DE PESTAÑAS (IGUALES) -->
                 <div id="tab-curso" class="tab-content">
                     <div class="card"><h3>Listado de Alumnos <div style="display:flex; gap:0.5rem;"><button class="btn btn-sm btn-primary" onclick="openEditStudentModal()">Editar Masivo</button><button class="btn btn-sm btn-success" onclick="openAddStudentModal()">+ Agregar Alumno</button></div></h3><div id="students-list-curso"></div></div>
                 </div>
+
                 <div id="tab-ingresos" class="tab-content">
                     <div class="card"><h3>Ingresos Extra <button class="btn btn-sm btn-primary" onclick="openIngresoModal()">+ Nuevo Ingreso</button></h3><div id="ingresos-list"></div></div>
                 </div>
+
                 <div id="tab-cuotas" class="tab-content">
                     <div class="card"><h3>Pago de Cuotas - <span id="cuota-month-label">Mayo 2026</span></h3><div id="cuotas-list"></div></div>
                 </div>
+
                 <div id="tab-egresos" class="tab-content">
                     <div class="card"><h3>Gastos <button class="btn btn-sm btn-danger" onclick="openEgresoModal()">+ Agregar Gasto</button></h3><table><thead><tr><th>Fecha</th><th>Descripción</th><th>Monto</th><th>Archivo</th><th>Acciones</th></tr></thead><tbody id="egresos-table-body"></tbody></table></div>
                 </div>
+
                 <div id="tab-transparencia" class="tab-content">
                     <div id="transparency-content">
                         <div class="transparency-header">
@@ -359,6 +351,7 @@
                         <div class="card"><h3>Detalle de Gastos - <span id="trans-expenses-month">Mayo 2026</span></h3><table><thead><tr><th>Descripción</th><th>Categoría</th><th>Monto</th><th>Comprobante</th></tr></thead><tbody id="trans-expenses-body"></tbody></table></div>
                     </div>
                 </div>
+
                 <div id="tab-movimientos" class="tab-content">
                     <div class="card">
                         <h3>Registro de Actividad</h3>
@@ -367,6 +360,7 @@
                         <table><thead><tr><th>Fecha/Hora</th><th>Usuario</th><th>Acción</th><th>Detalle</th><th>Acciones</th></tr></thead><tbody id="movimientos-table-body"></tbody></table>
                     </div>
                 </div>
+
                 <div id="tab-config" class="tab-content">
                     <h2 style="margin-bottom:1.5rem; font-size:1.8rem;">Configuración</h2>
                     <p style="color:var(--text-light); margin-bottom:2rem;">Ajustes del sistema</p>
@@ -380,7 +374,6 @@
         </main>
     </div>
 
-    <!-- MODALES (IGUALES) -->
     <div id="modal-edit-student" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-edit-student')">&times;</span><h3>Editar Alumno</h3><input type="hidden" id="edit-student-id"><div class="input-group"><label>Apoderado</label><input type="text" id="edit-guard"></div><div class="input-group"><label>Teléfono</label><input type="text" id="edit-phone"></div><button class="btn btn-primary" onclick="saveStudentEdit()">Guardar</button></div></div>
     <div id="modal-add-student" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-add-student')">&times;</span><h3>Agregar Nuevo Alumno</h3><div class="form-row"><div class="input-group"><label>Apellido</label><input type="text" id="add-student-last"></div><div class="input-group"><label>Nombres</label><input type="text" id="add-student-first"></div></div><div class="input-group"><label>Apoderado</label><input type="text" id="add-student-guard"></div><div class="input-group"><label>Teléfono</label><input type="text" id="add-student-phone"></div><button class="btn btn-success" onclick="saveNewStudent()">Agregar Alumno</button></div></div>
     <div id="modal-ingreso" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-ingreso')">&times;</span><h3>Nuevo Ingreso</h3><div class="form-row"><div class="input-group"><label>Tipo</label><select id="ingreso-type" onchange="toggleIngresoFields()"><option value="fijo">Monto Fijo</option><option value="cuota">Monto por Cuota (Alumnos)</option></select></div><div class="input-group"><label>Fecha</label><input type="date" id="ingreso-date"></div></div><div class="input-group"><label>Concepto</label><input type="text" id="ingreso-concept"></div><div id="ingreso-fijo-fields"><div class="input-group"><label>Monto Total ($)</label><input type="number" id="ingreso-amount"></div></div><div id="ingreso-cuota-fields" style="display:none;"><div class="input-group"><label>Monto por Alumno ($)</label><input type="number" id="ingreso-amount-per"></div><div class="input-group"><label>Seleccionar Alumnos</label><div class="checkbox-grid" id="ingreso-students-checks"></div></div></div><button class="btn btn-primary" style="margin-top:1rem;" onclick="saveIngreso()">Guardar</button></div></div>
@@ -413,7 +406,7 @@
         const MONTH_NAMES_SHORT = {"03":"Mar","04":"Abr","05":"May","06":"Jun","07":"Jul","08":"Ago","09":"Sep","10":"Oct","11":"Nov","12":"Dic"};
         const ALL_MONTHS = ['03','04','05','06','07','08','09','10','11','12'];
         let appData = { students: [], ingresos: [], cuotas: [], egresos: [], logs: [], config: { cuotaAmount: 10000, cuotaHistory: [], theme: 'light' }, nextStudentId: 42 };
-        let currentUser = null, currentMonth = '05', charts = {}, currentFileData = null, lastSyncTime = null;
+        let currentUser = null, currentMonth = '05', charts = {}, currentFileData = null, lastSyncTime = null, _editIngresoIdx = null;
 
         async function init() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -506,7 +499,6 @@
             document.getElementById('dash-egresos').textContent = formatCLP(tEgr);
             document.getElementById('dash-students').textContent = `${pc}/${appData.students.length}`;
 
-            // 1. TENDENCIAS MENSUALES
             const prevMonth = ALL_MONTHS[ALL_MONTHS.indexOf(currentMonth) - 1] || null;
             ['ingresos', 'egresos', 'balance', 'students'].forEach(key => {
                 const el = document.getElementById(`trend-${key}`);
@@ -521,7 +513,6 @@
                 el.innerHTML = `<span class="${cls}">${icon} ${Math.abs(change).toFixed(1)}%</span>`;
             });
 
-            // 3. BARRA DE PROGRESO MENSUAL
             const cuotaMensual = appData.config.cuotaAmount || 10000;
             const goal = appData.students.length * cuotaMensual;
             const current = cr ? cr.total : 0;
@@ -530,14 +521,12 @@
             document.getElementById('progress-amount').textContent = `${formatCLP(current)} / ${formatCLP(goal)}`;
             document.getElementById('progress-bar').style.width = `${Math.min(pct, 100)}%`;
 
-            // 2. ACTIVIDAD RECIENTE
             const logs = appData.logs.slice(0, 4);
             document.getElementById('recent-activity').innerHTML = logs.length ? logs.map(l => {
                 const d = new Date(l.ts);
                 return `<div class="activity-item"><div><strong>${l.action}</strong> - ${l.details}</div><div class="activity-time">${d.toLocaleDateString('es-CL')} ${d.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})}</div></div>`;
             }).join('') : '<div style="text-align:center; color:var(--text-light); padding:1rem;">Sin actividad reciente</div>';
 
-            // 5. SALUD Y SINCRONIZACIÓN
             const sizeKB = new Blob([JSON.stringify(appData)]).size / 1024;
             document.getElementById('health-sync').textContent = `🔄 Última sync: ${lastSyncTime ? lastSyncTime.toLocaleTimeString('es-CL') : '-'}`;
             document.getElementById('health-size').textContent = `📦 Tamaño: ${sizeKB.toFixed(1)} KB`;
@@ -545,7 +534,6 @@
             if (sizeKB > 900) { statusEl.className = 'badge badge-pending'; statusEl.textContent = '⚠️ Cerca del límite (1MB)'; }
             else { statusEl.className = 'badge badge-paid'; statusEl.textContent = '🔋 Firebase: Activo'; }
 
-            // GRÁFICOS (IGUALES)
             const inc = ALL_MONTHS.map(m => getMonthTotal(m, 'income'));
             const exp = ALL_MONTHS.map(m => getMonthTotal(m, 'expense'));
             createChart('chartIncomeExpense', { type: 'bar', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES_SHORT[m]), datasets: [{ label: 'Ingresos', data: inc, backgroundColor: '#10b981', borderRadius: 6 }, { label: 'Egresos', data: exp, backgroundColor: '#ef4444', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false } });
@@ -560,17 +548,100 @@
         function openAddStudentModal() { document.getElementById('add-student-last').value=''; document.getElementById('add-student-first').value=''; document.getElementById('add-student-guard').value=''; document.getElementById('add-student-phone').value=''; document.getElementById('modal-add-student').classList.add('active'); }
         function saveNewStudent() { const l=document.getElementById('add-student-last').value.trim().toUpperCase(), f=document.getElementById('add-student-first').value.trim().toUpperCase(), g=document.getElementById('add-student-guard').value.trim(), p=document.getElementById('add-student-phone').value.trim(); if(!l||!f) return alert('Completa al menos apellido y nombres'); appData.students.push({id:appData.nextStudentId++,last:l,first:f,guard:g,phone:p}); logActivity('AGREGAR_ALUMNO',`Agregó nuevo alumno: ${l} ${f}`); closeModal('modal-add-student'); saveData(); alert('Alumno agregado correctamente'); }
 
-        function renderIngresos() { const c = document.getElementById('ingresos-list'); if(appData.ingresos.length === 0) { c.innerHTML = '<p style="text-align:center; color:#64748b; padding:2rem;">No hay ingresos.</p>'; return; } const sorted = [...appData.ingresos].sort((a,b) => new Date(b.date) - new Date(a.date)); c.innerHTML = sorted.map(i => { const paying = i.type === 'cuota' ? i.students.filter(s => !s.exempt).length : 0; const p = i.type === 'cuota' ? (paying / appData.students.length * 100) : 100; return `<div class="card" style="margin-bottom:1rem; border-left:4px solid var(--success);"><div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;"><div><strong>${i.concept}</strong> <span class="badge" style="background:#e0f2fe; color:#0284c7;">${i.type === 'fijo' ? 'Fijo' : 'Por Alumno'}</span><div style="font-size:0.85rem; color:#64748b; margin-top:0.3rem;">${i.date} | ${i.type === 'fijo' ? 'Total: '+formatCLP(i.amount) : formatCLP(i.amountPer)+' c/u'}</div></div><div style="display:flex; gap:0.5rem;">${i.type === 'cuota' ? `<button class="btn btn-sm btn-primary" onclick="editIngreso(${i.id})">Editar/Ver</button>` : ''}<button class="btn btn-sm btn-danger" onclick="deleteIngreso(${i.id})">Eliminar</button></div></div>${i.type === 'cuota' ? `<div style="margin-top:0.8rem;"><div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.3rem;"><span>Pagando: ${paying}/${i.students.length} (Total clase: ${appData.students.length})</span><span>${formatCLP(i.amount)}</span></div><div class="progress-container"><div class="progress-bar" style="width:${p}%"></div></div></div>` : ''}</div>`; }).join(''); }
-        function openIngresoModal() { document.getElementById('ingreso-type').value = 'fijo'; document.getElementById('ingreso-date').value = `2026-${currentMonth}-01`; document.getElementById('ingreso-concept').value = ''; document.getElementById('ingreso-amount').value = ''; document.getElementById('ingreso-amount-per').value = ''; toggleIngresoFields(); renderStudentChecks('ingreso-students-checks', []); document.getElementById('modal-ingreso').classList.add('active'); }
+        // ✅ CORRECCIÓN DEFINITIVA: Usa INDICES en lugar de IDs para evitar conflictos de formato
+        function renderIngresos() {
+            const c = document.getElementById('ingresos-list');
+            if(appData.ingresos.length === 0) { c.innerHTML = '<p style="text-align:center; color:#64748b; padding:2rem;">No hay ingresos.</p>'; return; }
+            const sorted = [...appData.ingresos].sort((a,b) => new Date(b.date) - new Date(a.date));
+            c.innerHTML = sorted.map(i => {
+                const idx = appData.ingresos.indexOf(i); // ✅ Índice seguro del array original
+                const studentsArr = i.students || [];
+                const paying = i.type === 'cuota' ? studentsArr.filter(s => !s.exempt).length : 0;
+                const p = i.type === 'cuota' ? (paying / appData.students.length * 100) : 100;
+                return `
+                <div class="card" style="margin-bottom:1rem; border-left:4px solid var(--success);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                        <div><strong>${i.concept || 'Sin concepto'}</strong> <span class="badge" style="background:#e0f2fe; color:#0284c7;">${i.type === 'fijo' ? 'Fijo' : 'Por Alumno'}</span><div style="font-size:0.85rem; color:#64748b; margin-top:0.3rem;">${i.date || 'Fecha desconocida'} | ${i.type === 'fijo' ? 'Total: '+formatCLP(i.amount || 0) : formatCLP(i.amountPer || 0)+' c/u'}</div></div>
+                        <div style="display:flex; gap:0.5rem;">${i.type === 'cuota' ? `<button class="btn btn-sm btn-primary" onclick="editIngresoByIndex(${idx})">Editar/Ver</button>` : ''}<button class="btn btn-sm btn-danger" onclick="deleteIngresoByIndex(${idx})">Eliminar</button></div>
+                    </div>
+                    ${i.type === 'cuota' ? `<div style="margin-top:0.8rem;"><div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.3rem;"><span>Pagando: ${paying}/${studentsArr.length} (Total clase: ${appData.students.length})</span><span>${formatCLP(i.amount || 0)}</span></div><div class="progress-container"><div class="progress-bar" style="width:${p}%"></div></div></div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        function openIngresoModal() { 
+            _editIngresoIdx = null; // ✅ Resetea referencia
+            document.getElementById('ingreso-type').value = 'fijo'; 
+            document.getElementById('ingreso-date').value = `2026-${currentMonth}-01`; 
+            document.getElementById('ingreso-concept').value = ''; 
+            document.getElementById('ingreso-amount').value = ''; 
+            document.getElementById('ingreso-amount-per').value = ''; 
+            toggleIngresoFields(); 
+            renderStudentChecks('ingreso-students-checks', []); 
+            const saveBtn = document.querySelector('#modal-ingreso .btn-primary');
+            saveBtn.onclick = saveIngreso;
+            saveBtn.textContent = 'Guardar';
+            document.getElementById('modal-ingreso').classList.add('active'); 
+        }
+
         function toggleIngresoFields() { const t = document.getElementById('ingreso-type').value; document.getElementById('ingreso-fijo-fields').style.display = t === 'fijo' ? 'block' : 'none'; document.getElementById('ingreso-cuota-fields').style.display = t === 'cuota' ? 'block' : 'none'; }
         function renderStudentChecks(cid, pd) { document.getElementById(cid).innerHTML = appData.students.map(s => { const d = pd.find(p => p.id === s.id) || {}; const ip = d.paid || false, ie = d.exempt || false; return `<div class="student-check ${ie?'exempt':(ip?'paid':'')}"><label><input type="checkbox" value="${s.id}" ${ip?'checked':''} onchange="updateIngresoCheck(this)"><span style="font-size:0.9rem;">${s.id}. ${s.last} ${s.first}</span></label><button class="exempt-toggle ${ie?'active':''}" onclick="toggleExempt(this, ${s.id})">Eximir</button></div>`; }).join(''); }
         function toggleExempt(btn, id) { btn.classList.toggle('active'); const div = btn.closest('.student-check'), cb = div.querySelector('input[type="checkbox"]'); if(btn.classList.contains('active')) { cb.checked = true; cb.disabled = true; div.classList.add('exempt'); div.classList.remove('paid'); } else { cb.checked = false; cb.disabled = false; div.classList.remove('exempt'); } }
         function updateIngresoCheck(cb) { const div = cb.closest('.student-check'); if(cb.checked && !div.querySelector('.exempt-toggle').classList.contains('active')) div.classList.add('paid'); else div.classList.remove('paid'); }
 
         function saveIngreso() { const t = document.getElementById('ingreso-type').value, d = document.getElementById('ingreso-date').value, c = document.getElementById('ingreso-concept').value; if(!d || !c) return alert('Completa fecha y concepto'); if(new Date(d).getFullYear() < 2026) return alert('Solo registros desde 2026'); let r = { id: 'ing_' + Date.now() + '_' + Math.floor(Math.random() * 10000), type: t, date: d, concept: c, students: [] }; if(t === 'fijo') { const a = parseFloat(document.getElementById('ingreso-amount').value); if(!a) return alert('Ingresa el monto'); r.amount = a; logActivity('INGRESO_FIJO', `${c} - ${formatCLP(a)}`); } else { const ap = parseFloat(document.getElementById('ingreso-amount-per').value); if(!ap) return alert('Ingresa monto por alumno'); r.amountPer = ap; document.querySelectorAll('#ingreso-students-checks .student-check').forEach(div => { const id = parseInt(div.querySelector('input').value), p = div.querySelector('input').checked, e = div.querySelector('.exempt-toggle').classList.contains('active'); if(p) r.students.push({ id, paid: true, exempt: e }); }); const payingStudents = r.students.filter(s => !s.exempt); r.amount = ap * payingStudents.length; logActivity('INGRESO_POR_ALUMNO', `${c} - ${payingStudents.length} pagando (eximidos: ${r.students.length - payingStudents.length}) - ${formatCLP(r.amount)}`); } appData.ingresos.push(r); closeModal('modal-ingreso'); saveData(); }
-        function deleteIngreso(id) { if(!confirm('¿Eliminar?')) return; const ing = appData.ingresos.find(i => i.id === id); appData.ingresos = appData.ingresos.filter(i => i.id !== id); logActivity('ELIMINAR_INGRESO', `Eliminó: ${ing?.concept}`); saveData(); }
-        function editIngreso(id) { const i = appData.ingresos.find(x => x.id === id); document.getElementById('ingreso-type').value = i.type; document.getElementById('ingreso-date').value = i.date; document.getElementById('ingreso-concept').value = i.concept; document.getElementById('ingreso-amount').value = i.type === 'fijo' ? i.amount : ''; document.getElementById('ingreso-amount-per').value = i.type === 'cuota' ? i.amountPer : ''; toggleIngresoFields(); renderStudentChecks('ingreso-students-checks', i.students); document.querySelector('#modal-ingreso .btn-primary').onclick = () => updateIngreso(id); document.getElementById('modal-ingreso').classList.add('active'); }
-        function updateIngreso(id) { const idx = appData.ingresos.findIndex(i => i.id === id), i = appData.ingresos[idx]; i.date = document.getElementById('ingreso-date').value; i.concept = document.getElementById('ingreso-concept').value; if(i.type === 'fijo') i.amount = parseFloat(document.getElementById('ingreso-amount').value); else { i.amountPer = parseFloat(document.getElementById('ingreso-amount-per').value); i.students = []; document.querySelectorAll('#ingreso-students-checks .student-check').forEach(div => { const sid = parseInt(div.querySelector('input').value), p = div.querySelector('input').checked, e = div.querySelector('.exempt-toggle').classList.contains('active'); if(p) i.students.push({ id: sid, paid: true, exempt: e }); }); const payingStudents = i.students.filter(s => !s.exempt); i.amount = i.amountPer * payingStudents.length; } logActivity('EDITAR_INGRESO', `Editó: ${i.concept}`); closeModal('modal-ingreso'); saveData(); }
+
+        // ✅ NUEVO: Editar por índice (100% seguro)
+        function editIngresoByIndex(idx) {
+            const i = appData.ingresos[idx];
+            if (!i) return alert('⚠️ Registro no encontrado.');
+            _editIngresoIdx = idx; // ✅ Guarda índice seguro
+            document.getElementById('ingreso-type').value = i.type || 'fijo';
+            document.getElementById('ingreso-date').value = i.date || '';
+            document.getElementById('ingreso-concept').value = i.concept || '';
+            document.getElementById('ingreso-amount').value = i.type === 'fijo' ? (i.amount || '') : '';
+            document.getElementById('ingreso-amount-per').value = i.type === 'cuota' ? (i.amountPer || '') : '';
+            toggleIngresoFields();
+            renderStudentChecks('ingreso-students-checks', i.students || []);
+            const saveBtn = document.querySelector('#modal-ingreso .btn-primary');
+            saveBtn.onclick = updateIngreso;
+            saveBtn.textContent = '💾 Actualizar Ingreso';
+            document.getElementById('modal-ingreso').classList.add('active');
+        }
+
+        // ✅ NUEVO: Actualizar por índice
+        function updateIngreso() {
+            if (_editIngresoIdx === null || _editIngresoIdx === undefined) return alert('⚠️ Referencia perdida.');
+            const i = appData.ingresos[_editIngresoIdx];
+            i.date = document.getElementById('ingreso-date').value;
+            i.concept = document.getElementById('ingreso-concept').value;
+            if(i.type === 'fijo') {
+                i.amount = parseFloat(document.getElementById('ingreso-amount').value) || 0;
+            } else {
+                i.amountPer = parseFloat(document.getElementById('ingreso-amount-per').value) || 0;
+                i.students = [];
+                document.querySelectorAll('#ingreso-students-checks .student-check').forEach(div => {
+                    const sid = parseInt(div.querySelector('input').value);
+                    const p = div.querySelector('input').checked;
+                    const e = div.querySelector('.exempt-toggle').classList.contains('active');
+                    if(p) i.students.push({ id: sid, paid: true, exempt: e });
+                });
+                const payingStudents = i.students.filter(s => !s.exempt);
+                i.amount = i.amountPer * payingStudents.length;
+            }
+            logActivity('EDITAR_INGRESO', `Editó: ${i.concept}`);
+            closeModal('modal-ingreso');
+            saveData();
+        }
+
+        // ✅ NUEVO: Eliminar por índice
+        function deleteIngresoByIndex(idx) {
+            if(!confirm('¿Eliminar este ingreso?')) return;
+            const ing = appData.ingresos[idx];
+            appData.ingresos.splice(idx, 1); // ✅ Eliminación segura por índice
+            logActivity('ELIMINAR_INGRESO', `Eliminó: ${ing?.concept}`);
+            saveData();
+        }
 
         function renderCuotas() { const c = document.getElementById('cuotas-list'), tm = `2026-${currentMonth}`, cu = appData.cuotas.find(x => x.month === tm); if(!cu) { c.innerHTML = '<div style="text-align:center; padding:3rem; color:var(--text-light);"><p style="margin-bottom:1rem;">Error: No hay cuota registrada para este mes.</p></div>'; return; } let h = `<div style="margin-bottom:1.5rem; padding:1rem; background:var(--hover); border-radius:8px; display:flex; justify-content:space-between; align-items:center;"><div><strong style="font-size:1.1rem;">Cuota: ${formatCLP(cu.amountPer)}</strong><div style="font-size:0.9rem; color:var(--text-light);">Total recaudado: ${formatCLP(cu.total)}</div></div><div style="font-size:1.2rem; font-weight:bold; color:var(--primary);">${cu.paidStudents.length}/${appData.students.length}</div></div>`; h += '<div style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">'; h += appData.students.map(s => { const ip = cu.paidStudents.includes(s.id); return `<div class="student-row ${ip?'paid-row':''}" style="${ip?'background:#f0fdf4;':''}"><div class="student-info"><div class="student-num" style="${ip?'background:var(--success);':''}">${s.id}</div><div><div class="student-name">${s.last} ${s.first}</div>${ip?'<span class="badge badge-paid">Pagado</span>':'<span class="badge badge-pending">Pendiente</span>'}</div></div>${ip?`<button class="btn btn-sm btn-danger" onclick="deleteCuotaPayment('${cu.month}', ${s.id})">Eliminar Pago</button>`:`<button class="btn btn-sm btn-success" onclick="addCuotaPayment('${cu.month}', ${s.id})">Pagar</button>`}</div>`; }).join(''); h += '</div>'; c.innerHTML = h; }
         function addCuotaPayment(m, sid) { const cu = appData.cuotas.find(c => c.month === m); if(!cu.paidStudents.includes(sid)) { cu.paidStudents.push(sid); const ap = cu.amountPer || appData.config.cuotaAmount || 10000; cu.amountPer = ap; cu.total = ap * cu.paidStudents.length; logActivity('PAGO_CUOTA', `${appData.students.find(s=>s.id===sid).last} ${appData.students.find(s=>s.id===sid).first} pagó cuota ${MONTH_NAMES[m.split('-')[1]]}`); saveData(); } }
