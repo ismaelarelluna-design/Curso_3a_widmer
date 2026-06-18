@@ -312,8 +312,24 @@
                     <div class="card"><h3>Pago de Cuotas - <span id="cuota-month-label">Mayo 2026</span></h3><div id="cuotas-list"></div></div>
                 </div>
 
+                <!-- ✅ MODIFICADO: Gasto Total VISIBLE sin modales -->
                 <div id="tab-egresos" class="tab-content">
-                    <div class="card"><h3>Gastos <button class="btn btn-sm btn-danger" onclick="openEgresoModal()">+ Agregar Gasto</button></h3><table><thead><tr><th>Fecha</th><th>Descripción</th><th>Monto</th><th>Archivo</th><th>Acciones</th></tr></thead><tbody id="egresos-table-body"></tbody></table></div>
+                    <div class="card">
+                        <h3>Gastos</h3>
+                        <!-- Tarjeta visible con el total acumulado -->
+                        <div class="stat-card expense" style="margin-bottom:1.5rem; cursor:default;">
+                            <h4>💰 Gasto Total Acumulado (Todos los meses)</h4>
+                            <div class="value" id="egresos-total-amount" style="color:var(--danger);">$0</div>
+                            <div class="subtext" id="egresos-total-count">0 registros en total</div>
+                        </div>
+                        
+                        <div style="display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                            <button class="btn btn-sm btn-warning" onclick="showMonthlyExpenses()">📅 Ver desglose por mes</button>
+                            <button class="btn btn-sm btn-primary" onclick="openEgresoModal()">+ Agregar Gasto</button>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-light); margin-bottom:1rem;">Mostrando gastos para: <strong id="egresos-month-label">Mayo 2026</strong></p>
+                        <table><thead><tr><th>Fecha</th><th>Descripción</th><th>Monto</th><th>Archivo</th><th>Acciones</th></tr></thead><tbody id="egresos-table-body"></tbody></table>
+                    </div>
                 </div>
 
                 <div id="tab-transparencia" class="tab-content">
@@ -379,6 +395,8 @@
     <div id="modal-ingreso" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-ingreso')">&times;</span><h3>Nuevo Ingreso</h3><div class="form-row"><div class="input-group"><label>Tipo</label><select id="ingreso-type" onchange="toggleIngresoFields()"><option value="fijo">Monto Fijo</option><option value="cuota">Monto por Cuota (Alumnos)</option></select></div><div class="input-group"><label>Fecha</label><input type="date" id="ingreso-date"></div></div><div class="input-group"><label>Concepto</label><input type="text" id="ingreso-concept"></div><div id="ingreso-fijo-fields"><div class="input-group"><label>Monto Total ($)</label><input type="number" id="ingreso-amount"></div></div><div id="ingreso-cuota-fields" style="display:none;"><div class="input-group"><label>Monto por Alumno ($)</label><input type="number" id="ingreso-amount-per"></div><div class="input-group"><label>Seleccionar Alumnos</label><div class="checkbox-grid" id="ingreso-students-checks"></div></div></div><button class="btn btn-primary" style="margin-top:1rem;" onclick="saveIngreso()">Guardar</button></div></div>
     <div id="modal-egreso" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-egreso')">&times;</span><h3>Agregar Gasto</h3><input type="hidden" id="egreso-edit-id"><div class="form-row"><div class="input-group"><label>Fecha</label><input type="date" id="egreso-date"></div><div class="input-group"><label>Monto ($)</label><input type="number" id="egreso-amount"></div></div><div class="input-group"><label>Descripción</label><input type="text" id="egreso-desc"></div><div class="input-group"><label>Comprobante (Foto/Archivo)</label><div class="file-upload" onclick="document.getElementById('egreso-file').click()"><span id="file-label">Clic para subir archivo</span><input type="file" id="egreso-file" style="display:none" accept="image/*,.pdf" onchange="previewFile(this)"><img id="file-preview-img" class="file-preview" style="display:none;"></div><button type="button" class="btn btn-sm btn-danger" id="btn-remove-img" style="display:none; margin-top:0.5rem;" onclick="removeImage()">🗑️ Quitar imagen</button></div><button class="btn btn-danger" style="margin-top:1rem;" onclick="saveEgreso()">Guardar Gasto</button></div></div>
     <div id="modal-share" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-share')">&times;</span><h3>Compartir Transparencia</h3><p style="margin-bottom:1rem; color:var(--text-light);">Copia este link y compártelo con el curso. Podrán ver la información sin necesidad de contraseña.</p><div class="share-link-box"><input type="text" id="share-link" readonly value="https://app-curso-3a.vercel.app/transparencia"><button class="btn btn-sm btn-primary" onclick="copyShareLink()">Copiar</button></div><button class="btn btn-primary" onclick="closeModal('modal-share')">Cerrar</button></div></div>
+    <!-- ✅ MODAL PARA DESGLOSE MENSUAL -->
+    <div id="modal-egresos-summary" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-egresos-summary')">&times;</span><h3 id="summary-title">Desglose Mensual</h3><div id="summary-content" style="margin-top:1rem;"></div><button class="btn btn-primary" style="margin-top:1.5rem;" onclick="closeModal('modal-egresos-summary')">Cerrar</button></div></div>
 
     <script>
         function toggleMobileMenu() { const s=document.getElementById('sidebar'), o=document.getElementById('menuOverlay'); s.classList.toggle('active'); o.classList.toggle('active'); }
@@ -465,7 +483,7 @@
         function logout() { localStorage.removeItem(APP_KEY+'_user'); currentUser=null; location.reload(); }
         function toggleTheme() { if (currentUser === 'PÚBLICO') return; const d = document.body.getAttribute('data-theme') === 'dark'; document.body.setAttribute('data-theme', d ? 'light' : 'dark'); document.getElementById('theme-toggle').classList.toggle('active'); appData.config.theme = d ? 'light' : 'dark'; saveData(); updateChartsTheme(); }
         function setMonth(m) { currentMonth = m; updateMonthSelector(); renderAll(); }
-        function updateMonthSelector() { document.querySelectorAll('.month-btn').forEach(b => b.classList.toggle('active', b.dataset.month === currentMonth)); document.getElementById('chart-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('cuota-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('trans-period').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('trans-expenses-month').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('progress-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; }
+        function updateMonthSelector() { document.querySelectorAll('.month-btn').forEach(b => b.classList.toggle('active', b.dataset.month === currentMonth)); document.getElementById('chart-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('cuota-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('trans-period').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('trans-expenses-month').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('progress-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('egresos-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; }
         function switchTab(tab) { if (currentUser === 'PÚBLICO') return; document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById('tab-'+tab).classList.add('active'); event.currentTarget.classList.add('active'); document.getElementById('sidebar').classList.remove('active'); document.getElementById('menuOverlay').classList.remove('active'); const titles = {'dashboard':'Dashboard General','curso':'Listado del Curso','ingresos':'Ingresos Extra','cuotas':'Pago de Cuotas','egresos':'Gastos','transparencia':'Transparencia','movimientos':'Movimientos','config':'Configuración'}; document.getElementById('page-title').textContent = titles[tab]; renderAll(); }
         function renderAll() { renderDashboard(); renderCurso(); renderIngresos(); renderCuotas(); renderEgresos(); renderTransparencia(); renderMovimientos(); renderConfig(); }
 
@@ -548,13 +566,12 @@
         function openAddStudentModal() { document.getElementById('add-student-last').value=''; document.getElementById('add-student-first').value=''; document.getElementById('add-student-guard').value=''; document.getElementById('add-student-phone').value=''; document.getElementById('modal-add-student').classList.add('active'); }
         function saveNewStudent() { const l=document.getElementById('add-student-last').value.trim().toUpperCase(), f=document.getElementById('add-student-first').value.trim().toUpperCase(), g=document.getElementById('add-student-guard').value.trim(), p=document.getElementById('add-student-phone').value.trim(); if(!l||!f) return alert('Completa al menos apellido y nombres'); appData.students.push({id:appData.nextStudentId++,last:l,first:f,guard:g,phone:p}); logActivity('AGREGAR_ALUMNO',`Agregó nuevo alumno: ${l} ${f}`); closeModal('modal-add-student'); saveData(); alert('Alumno agregado correctamente'); }
 
-        // ✅ CORRECCIÓN DEFINITIVA: Usa INDICES en lugar de IDs para evitar conflictos de formato
         function renderIngresos() {
             const c = document.getElementById('ingresos-list');
             if(appData.ingresos.length === 0) { c.innerHTML = '<p style="text-align:center; color:#64748b; padding:2rem;">No hay ingresos.</p>'; return; }
             const sorted = [...appData.ingresos].sort((a,b) => new Date(b.date) - new Date(a.date));
             c.innerHTML = sorted.map(i => {
-                const idx = appData.ingresos.indexOf(i); // ✅ Índice seguro del array original
+                const idx = appData.ingresos.indexOf(i);
                 const studentsArr = i.students || [];
                 const paying = i.type === 'cuota' ? studentsArr.filter(s => !s.exempt).length : 0;
                 const p = i.type === 'cuota' ? (paying / appData.students.length * 100) : 100;
@@ -570,7 +587,7 @@
         }
 
         function openIngresoModal() { 
-            _editIngresoIdx = null; // ✅ Resetea referencia
+            _editIngresoIdx = null;
             document.getElementById('ingreso-type').value = 'fijo'; 
             document.getElementById('ingreso-date').value = `2026-${currentMonth}-01`; 
             document.getElementById('ingreso-concept').value = ''; 
@@ -591,11 +608,10 @@
 
         function saveIngreso() { const t = document.getElementById('ingreso-type').value, d = document.getElementById('ingreso-date').value, c = document.getElementById('ingreso-concept').value; if(!d || !c) return alert('Completa fecha y concepto'); if(new Date(d).getFullYear() < 2026) return alert('Solo registros desde 2026'); let r = { id: 'ing_' + Date.now() + '_' + Math.floor(Math.random() * 10000), type: t, date: d, concept: c, students: [] }; if(t === 'fijo') { const a = parseFloat(document.getElementById('ingreso-amount').value); if(!a) return alert('Ingresa el monto'); r.amount = a; logActivity('INGRESO_FIJO', `${c} - ${formatCLP(a)}`); } else { const ap = parseFloat(document.getElementById('ingreso-amount-per').value); if(!ap) return alert('Ingresa monto por alumno'); r.amountPer = ap; document.querySelectorAll('#ingreso-students-checks .student-check').forEach(div => { const id = parseInt(div.querySelector('input').value), p = div.querySelector('input').checked, e = div.querySelector('.exempt-toggle').classList.contains('active'); if(p) r.students.push({ id, paid: true, exempt: e }); }); const payingStudents = r.students.filter(s => !s.exempt); r.amount = ap * payingStudents.length; logActivity('INGRESO_POR_ALUMNO', `${c} - ${payingStudents.length} pagando (eximidos: ${r.students.length - payingStudents.length}) - ${formatCLP(r.amount)}`); } appData.ingresos.push(r); closeModal('modal-ingreso'); saveData(); }
 
-        // ✅ NUEVO: Editar por índice (100% seguro)
         function editIngresoByIndex(idx) {
             const i = appData.ingresos[idx];
             if (!i) return alert('⚠️ Registro no encontrado.');
-            _editIngresoIdx = idx; // ✅ Guarda índice seguro
+            _editIngresoIdx = idx;
             document.getElementById('ingreso-type').value = i.type || 'fijo';
             document.getElementById('ingreso-date').value = i.date || '';
             document.getElementById('ingreso-concept').value = i.concept || '';
@@ -609,7 +625,6 @@
             document.getElementById('modal-ingreso').classList.add('active');
         }
 
-        // ✅ NUEVO: Actualizar por índice
         function updateIngreso() {
             if (_editIngresoIdx === null || _editIngresoIdx === undefined) return alert('⚠️ Referencia perdida.');
             const i = appData.ingresos[_editIngresoIdx];
@@ -634,11 +649,10 @@
             saveData();
         }
 
-        // ✅ NUEVO: Eliminar por índice
         function deleteIngresoByIndex(idx) {
             if(!confirm('¿Eliminar este ingreso?')) return;
             const ing = appData.ingresos[idx];
-            appData.ingresos.splice(idx, 1); // ✅ Eliminación segura por índice
+            appData.ingresos.splice(idx, 1);
             logActivity('ELIMINAR_INGRESO', `Eliminó: ${ing?.concept}`);
             saveData();
         }
@@ -647,7 +661,53 @@
         function addCuotaPayment(m, sid) { const cu = appData.cuotas.find(c => c.month === m); if(!cu.paidStudents.includes(sid)) { cu.paidStudents.push(sid); const ap = cu.amountPer || appData.config.cuotaAmount || 10000; cu.amountPer = ap; cu.total = ap * cu.paidStudents.length; logActivity('PAGO_CUOTA', `${appData.students.find(s=>s.id===sid).last} ${appData.students.find(s=>s.id===sid).first} pagó cuota ${MONTH_NAMES[m.split('-')[1]]}`); saveData(); } }
         function deleteCuotaPayment(m, sid) { if(!confirm('¿Eliminar pago?')) return; const cu = appData.cuotas.find(c => c.month === m); cu.paidStudents = cu.paidStudents.filter(id => id !== sid); const ap = cu.amountPer || appData.config.cuotaAmount || 10000; cu.amountPer = ap; cu.total = ap * cu.paidStudents.length; logActivity('ELIMINAR_PAGO_CUOTA', `Eliminó pago de ${appData.students.find(s=>s.id===sid).last} ${appData.students.find(s=>s.id===sid).first} cuota ${MONTH_NAMES[m.split('-')[1]]}`); saveData(); }
 
-        function renderEgresos() { const tb = document.getElementById('egresos-table-body'); if(appData.egresos.length === 0) { tb.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--text-light);">No hay gastos registrados</td></tr>'; return; } tb.innerHTML = appData.egresos.sort((a,b) => new Date(b.date) - new Date(a.date)).map(e => `<tr><td>${e.date}</td><td>${e.desc}</td><td>${formatCLP(e.amount)}</td><td>${e.file ? `<button class="btn-view-file" onclick="openReceiptPreview(${e.id})">📄 Ver Boleta</button>` : '-'}</td><td style="display:flex; gap:0.5rem;"><button class="btn btn-sm btn-primary" onclick="openEgresoModal(${e.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="deleteEgreso(${e.id})">Eliminar</button></td></tr>`).join(''); }
+        // ✅ MODIFICADA: Actualiza la tarjeta visible del total y filtra por mes
+        function renderEgresos() {
+            const tb = document.getElementById('egresos-table-body');
+            const prefix = `2026-${currentMonth}`;
+            const filtered = appData.egresos.filter(e => e.date.startsWith(prefix));
+            
+            // ✅ ACTUALIZA VALOR VISIBLE
+            const totalAll = appData.egresos.reduce((s, e) => s + e.amount, 0);
+            document.getElementById('egresos-total-amount').textContent = formatCLP(totalAll);
+            document.getElementById('egresos-total-count').textContent = `${appData.egresos.length} registros en total`;
+            
+            if(filtered.length === 0) {
+                tb.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--text-light);">No hay gastos registrados en ${MONTH_NAMES[currentMonth]} 2026</td></tr>`;
+                return;
+            }
+            tb.innerHTML = filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).map(e => `
+                <tr><td>${e.date}</td><td>${e.desc}</td><td>${formatCLP(e.amount)}</td><td>${e.file ? `<button class="btn-view-file" onclick="openReceiptPreview(${e.id})">📄 Ver Boleta</button>` : '-'}</td><td style="display:flex; gap:0.5rem;"><button class="btn btn-sm btn-primary" onclick="openEgresoModal(${e.id})">Editar</button><button class="btn btn-sm btn-danger" onclick="deleteEgreso(${e.id})">Eliminar</button></td></tr>
+            `).join('');
+        }
+
+        // ✅ DESGLOSE MENSUAL (Modal)
+        function showMonthlyExpenses() {
+            const grouped = {};
+            let grandTotal = 0;
+            ALL_MONTHS.forEach(m => grouped[m] = { total: 0, count: 0 });
+
+            appData.egresos.forEach(e => {
+                const m = e.date.substring(5, 7);
+                if (grouped[m]) {
+                    grouped[m].total += e.amount;
+                    grouped[m].count += 1;
+                }
+            });
+
+            let html = '<table style="width:100%; margin-bottom:1rem;"><thead><tr><th>Mes</th><th style="text-align:center;">Registros</th><th style="text-align:right;">Acumulado</th></tr></thead><tbody>';
+            ALL_MONTHS.forEach(m => {
+                const d = grouped[m];
+                grandTotal += d.total;
+                html += `<tr><td>${MONTH_NAMES[m]} 2026</td><td style="text-align:center;">${d.count}</td><td style="text-align:right; font-weight:600;">${formatCLP(d.total)}</td></tr>`;
+            });
+            html += `<tr style="background:var(--hover); font-weight:bold;"><td>TOTAL GENERAL</td><td style="text-align:center;">${appData.egresos.length}</td><td style="text-align:right;">${formatCLP(grandTotal)}</td></tr></tbody></table>`;
+
+            document.getElementById('summary-title').textContent = '📅 Gasto Acumulado por Mes';
+            document.getElementById('summary-content').innerHTML = html;
+            document.getElementById('modal-egresos-summary').classList.add('active');
+        }
+
         function openEgresoModal(eid = null) { document.getElementById('egreso-edit-id').value = eid || ''; document.getElementById('egreso-date').value = new Date().toISOString().split('T')[0]; document.getElementById('egreso-amount').value = ''; document.getElementById('egreso-desc').value = ''; document.getElementById('egreso-file').value = ''; document.getElementById('file-preview-img').style.display = 'none'; document.getElementById('file-label').textContent = 'Clic para subir archivo'; document.getElementById('btn-remove-img').style.display = 'none'; currentFileData = null; if(eid) { const e = appData.egresos.find(x => x.id === eid); document.getElementById('egreso-date').value = e.date; document.getElementById('egreso-amount').value = e.amount; document.getElementById('egreso-desc').value = e.desc; if(e.file) { currentFileData = e.file; document.getElementById('file-preview-img').src = safeBase64(e.file); document.getElementById('file-preview-img').style.display = 'block'; document.getElementById('file-label').textContent = 'Archivo actual'; document.getElementById('btn-remove-img').style.display = 'inline-flex'; } } document.getElementById('modal-egreso').classList.add('active'); }
         function removeImage() { currentFileData = null; document.getElementById('egreso-file').value = ''; document.getElementById('file-preview-img').style.display = 'none'; document.getElementById('file-label').textContent = 'Clic para subir archivo'; document.getElementById('btn-remove-img').style.display = 'none'; }
         function previewFile(inp) { const f = inp.files[0]; if(!f) return; if(f.size > 1024 * 500) { alert('⚠️ La imagen es muy grande. Por favor sube una foto menor a 500KB o reduce la resolución.'); inp.value = ''; return; } const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.onload = () => { const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const MAX = 800; let w = img.width, h = img.height; if(w > h) { if(w > MAX) { h *= MAX/w; w = MAX; } } else { if(h > MAX) { w *= MAX/h; h = MAX; } } canvas.width = w; canvas.height = h; ctx.drawImage(img, 0, 0, w, h); currentFileData = canvas.toDataURL('image/jpeg', 0.7); const preview = document.getElementById('file-preview-img'); preview.src = currentFileData; preview.style.display = 'block'; document.getElementById('file-label').textContent = f.name; document.getElementById('btn-remove-img').style.display = 'inline-flex'; }; img.src = e.target.result; }; reader.readAsDataURL(f); }
