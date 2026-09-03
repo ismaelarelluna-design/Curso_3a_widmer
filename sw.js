@@ -1,11 +1,25 @@
 // Service Worker — Condominio Bosques del Sur 4
-const CACHE_NAME = 'cbs4-v2';
+const CACHE_NAME = 'cbs4-v4';
 const ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
+  '/css/styles.css',
+  '/js/core/firebase-init.js',
+  '/js/core/utils.js',
+  '/js/core/app.js',
+  '/js/tabs/dashboard.js',
+  '/js/tabs/curso.js',
+  '/js/tabs/ingresos.js',
+  '/js/tabs/cuotas.js',
+  '/js/tabs/egresos.js',
+  '/js/tabs/morosidad.js',
+  '/js/tabs/votaciones.js',
+  '/js/tabs/transparencia.js',
+  '/js/tabs/movimientos.js',
+  '/js/tabs/config.js',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js',
   'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js',
