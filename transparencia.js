@@ -83,44 +83,71 @@ function renderTransparencia() {
     document.getElementById('trans-expenses-body').innerHTML = me.map(e => `<tr><td>${e.desc}</td><td><span class="badge badge-pending">Gasto</span></td><td>${formatCLP(e.amount)}</td><td>${e.file ? `<button class="btn-view-file" onclick="openReceiptPreview(${e.id})">📄 Ver Boleta</button>` : '-'}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center; color:var(--text-light); padding:1.5rem;">Sin gastos este mes</td></tr>';
 }
 function exportToPDF() {
-    Object.values(charts).forEach(c => { if(c && typeof c.render === 'function') c.render(); });
-    const el = document.getElementById('transparency-content'), ot = document.body.getAttribute('data-theme');
-    const filename = `Transparencia_3A_${MONTH_NAMES[currentMonth]}_2026.pdf`;
+    const el = document.getElementById('transparency-content');
+    const filename = `Transparencia_3A_${MONTH_NAMES[currentMonth]}_2026`;
 
-    // La descarga automática por blob la bloquean muchos navegadores móviles
-    // de forma silenciosa (sin error, sin descarga). Por eso SIEMPRE abrimos
-    // una pestaña vacía YA MISMO (dentro del clic) y la llenamos con el PDF
-    // cuando esté listo, sin importar si la app está instalada o no.
-    const pdfWindow = window.open('', '_blank');
-    if (pdfWindow) {
-        pdfWindow.document.write('<title>Generando PDF...</title><body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#334155;">Generando PDF, un momento...</body>');
+    // Los navegadores de fábrica de algunos celulares (ej: Huawei) bloquean en
+    // silencio la descarga automática por blob/data-URI, sin mostrar ningún
+    // error. En vez de pelear con eso, usamos la función de imprimir nativa
+    // del propio Android/navegador: siempre trae la opción "Guardar como PDF".
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        alert('Tu navegador bloqueó la ventana emergente. Habilita las ventanas emergentes para este sitio e inténtalo de nuevo.');
+        return;
     }
+    printWindow.document.write('<title>Generando PDF...</title><body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#334155;">Generando PDF, un momento...</body>');
+    printWindow.document.close();
 
-    document.body.setAttribute('data-theme', 'light');
-    el.classList.add('pdf-export');
+    // Los gráficos (canvas) se ven según el tema actual (claro/oscuro). Para que
+    // el PDF quede legible siempre, forzamos modo claro, reconstruimos los charts
+    // con esos colores, tomamos una foto de cada uno, y al final devolvemos todo
+    // a como estaba (esto sí puede verse un instante en pantalla, es normal).
+    const originalTheme = document.body.getAttribute('data-theme');
+    document.body.removeAttribute('data-theme');
+    renderTransparencia();
+
     setTimeout(() => {
-        const opt = { margin: 0.5, filename: filename, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 1.5, useCORS: true, logging: false, allowTaint: true }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }, pagebreak: { mode: ['avoid-all', 'css', 'legacy'], avoid: ['.card', '.stat-card', '.stats-grid', '.bank-info'] } };
-        const restoreView = () => { el.classList.remove('pdf-export'); if(ot === 'dark') document.body.setAttribute('data-theme', 'dark'); else document.body.removeAttribute('data-theme'); };
-        html2pdf().set(opt).from(el).outputPdf('datauristring').then(dataUri => {
-            restoreView();
-            if (pdfWindow) {
-                pdfWindow.location.href = dataUri;
-            } else {
-                const link = document.createElement('a');
-                link.href = dataUri;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                alert('Si no ves el PDF, habilita las ventanas emergentes para este sitio e inténtalo de nuevo.');
+        const clone = el.cloneNode(true);
+        const liveCanvases = el.querySelectorAll('canvas');
+        const cloneCanvases = clone.querySelectorAll('canvas');
+        liveCanvases.forEach((liveCanvas, i) => {
+            try {
+                const img = document.createElement('img');
+                img.src = liveCanvas.toDataURL('image/png');
+                img.style.cssText = 'max-width:100%; height:auto; display:block; margin:0 auto;';
+                cloneCanvases[i].replaceWith(img);
+            } catch (e) {
+                console.error('No se pudo capturar un gráfico:', e);
             }
-            logActivity('EXPORTAR_PDF', `Exportó transparencia ${MONTH_NAMES[currentMonth]} 2026`);
-        }).catch(err => {
-            console.error(err);
-            restoreView();
-            if (pdfWindow) pdfWindow.close();
-            alert('Hubo un error al generar el PDF.');
         });
+        clone.querySelectorAll('.transparency-header button').forEach(b => b.remove());
+        clone.querySelectorAll('.btn-view-file').forEach(b => b.remove());
+
+        const cssHref = new URL('css/styles.css', window.location.href).href;
+        printWindow.document.open();
+        printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${filename}</title><link rel="stylesheet" href="${cssHref}"><style>
+body { margin: 0; padding: 16px; background: #fff; color: #1e293b; }
+.chart-row { display: block; }
+.card { break-inside: avoid; page-break-inside: avoid; margin-bottom: 1.2rem; border: 1px solid #ddd; box-shadow: none; }
+.stat-card, .stats-grid, .bank-info { break-inside: avoid; page-break-inside: avoid; }
+.print-toolbar { text-align: center; padding: 14px; background: #f1f5f9; margin-bottom: 16px; border-radius: 8px; }
+.print-toolbar button { padding: 10px 18px; font-size: 1rem; border-radius: 8px; border: none; background: #6366f1; color: #fff; cursor: pointer; }
+@media print { .print-toolbar { display: none; } body { padding: 0; } }
+</style></head><body>
+<div class="print-toolbar"><button onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button></div>
+${clone.innerHTML}
+</body></html>`);
+        printWindow.document.close();
+
+        // Restaurar el tema real de la app (los charts en pantalla quedaron
+        // reconstruidos en modo claro, hay que devolverlos a su estado normal).
+        if (originalTheme) document.body.setAttribute('data-theme', originalTheme);
+        renderTransparencia();
+
+        logActivity('EXPORTAR_PDF', `Exportó transparencia ${MONTH_NAMES[currentMonth]} 2026`);
+        printWindow.onload = () => {
+            setTimeout(() => { printWindow.focus(); printWindow.print(); }, 400);
+        };
     }, 1000);
 }
 function showShareModal() { const publicLink = window.location.origin + window.location.pathname + '?view=transparencia'; document.getElementById('share-link').value = publicLink; document.getElementById('modal-share').classList.add('active'); }
