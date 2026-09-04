@@ -6,75 +6,33 @@ function downloadVoucherPDF() {
     if(!currentVoucherData) return;
     const source = document.getElementById('voucher-preview');
     const student = currentVoucherData.student;
-    const filename = `Estado_Cuenta_${student.last}_${student.first}_2026.pdf`;
+    const title = `Estado_Cuenta_${student.last}_${student.first}_2026`;
 
-    // En PWA instalada (modo standalone) iOS/Android bloquean la descarga
-    // automática por blob que usa html2pdf().save(). Por eso, si detectamos
-    // ese modo, abrimos una pestaña vacía AHORA MISMO (dentro del clic, para
-    // que no la bloquee el navegador) y luego la llenamos con el PDF ya
-    // generado, para que el usuario lo guarde desde el visor nativo.
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    let pdfWindow = null;
-    if (isStandalone) {
-        pdfWindow = window.open('', '_blank');
-        if (pdfWindow) {
-            pdfWindow.document.write('<title>Generando PDF...</title><body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;color:#334155;">Generando PDF, un momento...</body>');
-        }
+    // Los navegadores de fábrica de algunos celulares (ej: Huawei) bloquean en
+    // silencio la descarga automática por blob/data-URI, sin mostrar ningún
+    // error. En vez de pelear con eso, usamos la función de imprimir nativa
+    // del propio Android/navegador: siempre trae la opción "Guardar como PDF",
+    // y no depende de ningún truco de JavaScript para descargar archivos.
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        alert('Tu navegador bloqueó la ventana emergente. Habilita las ventanas emergentes para este sitio e inténtalo de nuevo.');
+        return;
     }
 
-    const clone = source.cloneNode(true);
-    clone.style.width = '650px';
-    clone.style.margin = '0';
-    clone.style.boxShadow = 'none';
-    if (location.protocol === 'file:') {
-        clone.querySelectorAll('img').forEach(img => {
-            const ph = document.createElement('div');
-            ph.style.cssText = 'width:50px;height:50px;border-radius:8px;background:#1e1b4b;color:#ffffff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;flex-shrink:0;';
-            ph.textContent = '3A';
-            img.replaceWith(ph);
-        });
-    }
-    const holder = document.createElement('div');
-    holder.style.cssText = 'position:fixed;left:-9999px;top:0;z-index:-1;';
-    document.body.appendChild(holder);
-    holder.appendChild(clone);
-    const opt = {
-        margin: [0.3, 0.3, 0.3, 0.3],
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, scrollY: 0 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
+    const cssHref = new URL('css/styles.css', window.location.href).href;
+    printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><link rel="stylesheet" href="${cssHref}"><style>
+body { margin: 0; padding: 16px; background: #fff; }
+.debt-voucher { max-width: 650px; margin: 0 auto; box-shadow: none; }
+.print-toolbar { text-align: center; padding: 14px; background: #f1f5f9; margin-bottom: 16px; border-radius: 8px; }
+.print-toolbar button { padding: 10px 18px; font-size: 1rem; border-radius: 8px; border: none; background: #6366f1; color: #fff; cursor: pointer; }
+@media print { .print-toolbar { display: none; } body { padding: 0; } }
+</style></head><body>
+<div class="print-toolbar"><button onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button></div>
+${source.outerHTML}
+</body></html>`);
+    printWindow.document.close();
+    logActivity('DESCARGAR_PDF_VOUCHER', `Descargó PDF de ${student.last} ${student.first}`);
+    printWindow.onload = () => {
+        setTimeout(() => { printWindow.focus(); printWindow.print(); }, 400);
     };
-
-    if (isStandalone) {
-        html2pdf().set(opt).from(clone).outputPdf('datauristring').then(dataUri => {
-            if (pdfWindow) {
-                pdfWindow.location.href = dataUri;
-            } else {
-                const link = document.createElement('a');
-                link.href = dataUri;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-            }
-            logActivity('DESCARGAR_PDF_VOUCHER', `Descargó PDF de ${student.last} ${student.first}`);
-        }).catch(err => {
-            console.error(err);
-            if (pdfWindow) pdfWindow.close();
-            alert('Hubo un error al generar el PDF.');
-        }).finally(() => {
-            holder.remove();
-        });
-    } else {
-        html2pdf().set(opt).from(clone).save().then(() => {
-            logActivity('DESCARGAR_PDF_VOUCHER', `Descargó PDF de ${student.last} ${student.first}`);
-        }).catch(err => {
-            console.error(err);
-            alert('Hubo un error al generar el PDF.');
-        }).finally(() => {
-            holder.remove();
-        });
-    }
 }

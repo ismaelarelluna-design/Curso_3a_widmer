@@ -183,9 +183,6 @@ th { background: var(--hover); font-weight: 600; color: var(--text-light); } tr:
 .stat-card:hover { transform: translateY(-3px); border-color: var(--neon-cyan); box-shadow: 0 0 24px rgba(0,229,255,0.4); }
 .morosidad-card-slim:hover { border-color: var(--neon-cyan); box-shadow: 0 0 24px rgba(0,229,255,0.4); }
 
-/* Números grandes de las tarjetas con degradado neón */
-.stat-card .value { background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: var(--neon-cyan); }
-
 /* Barra de acento de cada tarjeta con glow permanente */
 .stat-card.income::before { box-shadow: 3px 0 14px rgba(57,255,20,0.7); background: var(--neon-lime); }
 .stat-card.expense::before { box-shadow: 3px 0 14px rgba(255,56,100,0.7); background: var(--neon-red); }
@@ -195,7 +192,6 @@ th { background: var(--hover); font-weight: 600; color: var(--text-light); } tr:
 
 /* Menú lateral con degradado y renglón activo iluminado */
 .sidebar { background: linear-gradient(165deg, #1e1b4b 0%, #12102e 55%, #1e1b4b 100%); }
-.sidebar-header h3 { background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .nav-item.active { background: linear-gradient(90deg, rgba(0,229,255,0.16), transparent); border-left: 3px solid var(--neon-cyan); box-shadow: inset 0 0 24px rgba(0,229,255,0.1); }
 .nav-item.active svg, .nav-item:hover svg { filter: drop-shadow(0 0 7px currentColor); }
 .sidebar-header { position: relative; }
@@ -217,11 +213,9 @@ th { background: var(--hover); font-weight: 600; color: var(--text-light); } tr:
 
 /* Pantalla de login con acento neón */
 .login-box { border: 1px solid rgba(0,229,255,0.35); box-shadow: 0 0 40px rgba(0,229,255,0.15), 0 20px 25px -5px rgb(0 0 0 / 0.3); }
-.login-box h2 { background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 
 /* El PDF exportado fuerza modo claro y se mantiene limpio, sin neón ni degradados. */
 .pdf-export .card, .pdf-export .stat-card, .pdf-export .morosidad-card-slim { border-color: #ddd !important; box-shadow: none !important; transform: none !important; }
-.pdf-export .stat-card .value { background: none !important; -webkit-text-fill-color: initial !important; color: #1e293b !important; }
 .pdf-export .progress-bar { background: var(--success) !important; box-shadow: none !important; }
 
 @media (max-width: 1024px) { .mobile-menu-btn { display: block; } .sidebar { position: fixed; left: -260px; top: 0; height: 100%; width: 260px; transition: left 0.3s ease; z-index: 100; } .sidebar.active { left: 0; } .nav-item span { display: inline; } .top-bar { padding: 0.8rem 1rem; } .content-area { padding: 1rem; } .chart-row { grid-template-columns: 1fr; } .month-selector { gap: 0.3rem; } .month-btn { padding: 0.5rem 0.9rem; font-size: 0.85rem; } .transparency-header { flex-direction: column; align-items: flex-start; } .bank-info-grid { grid-template-columns: repeat(2, 1fr); } .stats-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); } .quick-actions { justify-content: center; } .morosidad-grid { grid-template-columns: 1fr; } .voucher-header-prof { flex-direction: column; gap: 10px; text-align: center; } .voucher-payment-details { grid-template-columns: 1fr; } }
