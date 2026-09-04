@@ -1,11 +1,11 @@
-// Service Worker — Condominio Bosques del Sur 4
-const CACHE_NAME = 'cbs4-v6';
+// Service Worker — App Curso 3A (Colegio Alberto Widmer)
+const CACHE_NAME = 'cbs4-v7';
 const ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/icon-widmer-192.png',
+  '/icon-widmer-512.png',
   '/css/styles.css',
   '/js/core/firebase-init.js',
   '/js/core/utils.js',
@@ -20,10 +20,10 @@ const ASSETS = [
   '/js/tabs/transparencia.js',
   '/js/tabs/movimientos.js',
   '/js/tabs/config.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js',
-  'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
-  'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js',
-  'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Nunito:wght@300;400;500;600;700&display=swap'
+  'https://cdn.jsdelivr.net/npm/chart.js',
+  'https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js'
 ];
 
 // Instalar y cachear recursos

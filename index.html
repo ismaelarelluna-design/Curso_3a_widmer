@@ -250,5 +250,12 @@
 <script src="js/tabs/movimientos.js"></script>
 <script src="js/tabs/config.js"></script>
 <script src="js/core/app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => console.error('Error registrando Service Worker:', err));
+    });
+}
+</script>
 </body>
 </html>
