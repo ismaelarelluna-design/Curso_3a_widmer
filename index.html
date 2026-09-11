@@ -42,6 +42,7 @@
 <div class="nav-item" onclick="switchTab('egresos')" style="color: #f87171;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>Egresos</span></div>
 <div class="nav-item" onclick="switchTab('morosidad')" style="color: #ef4444;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><span>Morosidad</span></div>
 <div class="nav-item" onclick="switchTab('votaciones')" style="color: #fbbf24;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg><span>Votaciones</span></div>
+<div class="nav-item" onclick="switchTab('rifas')" style="color: #ff2ee6;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l4 4"></path><path d="M2.5 21.5 9 15"></path><path d="M15.5 3.5 3.5 15.5a2.12 2.12 0 0 0 3 3l12-12a2.12 2.12 0 0 0-3-3Z"></path><circle cx="10" cy="10" r="1"></circle><circle cx="14" cy="14" r="1"></circle></svg><span>Rifas</span></div>
 <div class="nav-item" onclick="switchTab('transparencia')" style="color: #38bdf8;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span>Transparencia</span></div>
 <div class="nav-item" onclick="switchTab('movimientos')" style="color: #f472b6;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg><span>Movimientos</span></div>
 <div class="nav-item" onclick="switchTab('config')" style="color: #94a3b8;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg><span>Configuración</span></div>
@@ -147,6 +148,19 @@
 <div id="votaciones-list" class="morosidad-grid"></div>
 </div>
 </div>
+<div id="tab-rifas" class="tab-content">
+<div id="rifas-view-list">
+<div class="card">
+<h3>🎟️ Rifas <button class="btn btn-sm btn-primary" onclick="openCreateRifaModal()">+ Nueva Rifa</button></h3>
+<p style="font-size:0.9rem; color:var(--text-light); margin-bottom:1rem;">Carga los números vendidos, define los premios por prioridad y sortea con animación y confeti.</p>
+<div id="rifas-list" class="morosidad-grid"></div>
+</div>
+</div>
+<div id="rifas-view-detail" style="display:none;">
+<span class="back-link" onclick="closeRifaDetail()">← Volver a Rifas</span>
+<div id="rifa-detail-content"></div>
+</div>
+</div>
 <div id="tab-transparencia" class="tab-content">
 <div id="transparency-content">
 <div class="transparency-header">
@@ -212,6 +226,7 @@
 </div>
 </main>
 </div>
+<canvas id="confetti-canvas" style="position:fixed; inset:0; pointer-events:none; z-index:9998;"></canvas>
 <div id="public-vote-screen" style="display:none; align-items:center; justify-content:center; min-height:100vh; background:linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); padding:2rem;">
 <div style="background:var(--card); border-radius:var(--radius); padding:2.5rem; max-width:480px; width:100%; box-shadow:0 20px 25px -5px rgb(0 0 0 / 0.2);">
 <img src="widmer_logo.png" alt="Logo Colegio" style="height:60px; display:block; margin:0 auto 1.2rem;">
@@ -238,6 +253,17 @@
 </div>
 <div id="modal-votacion" class="modal"><div class="modal-content" style="max-width:650px;"><span class="close-modal" onclick="closeModal('modal-votacion')">&times;</span><h3>Nueva Votación</h3><div class="form-row"><div class="input-group"><label>Nombre del Evento</label><input type="text" id="votacion-event" placeholder="Ej: Paseo de fin de año"></div><div class="input-group"><label>Fecha</label><input type="date" id="votacion-date"></div></div><div id="votacion-questions-list"></div><button type="button" class="btn btn-sm btn-warning" onclick="addVotacionQuestionBlock()" style="margin-bottom:1rem;">+ Agregar otra pregunta</button><button class="btn btn-primary" style="margin-top:0.5rem;" onclick="saveVotacion()">Crear Votación</button></div></div>
 <div id="modal-votacion-results" class="modal"><div class="modal-content" style="max-width:750px;"><span class="close-modal" onclick="closeModal('modal-votacion-results')">&times;</span><h3 id="votacion-results-title">Resultados</h3><p id="votacion-results-event" style="color:var(--text-light); font-size:0.9rem; margin-bottom:1.2rem;"></p><div id="votacion-results-body"></div><div style="display:flex; gap:0.5rem; margin-top:1.5rem; flex-wrap:wrap;"><button class="btn btn-sm btn-success" onclick="exportVotacionCSV()">📊 Exportar Excel (CSV)</button><button class="btn btn-primary" onclick="closeModal('modal-votacion-results')">Cerrar</button></div></div></div>
+<div id="modal-rifa" class="modal"><div class="modal-content" style="max-width:520px;"><span class="close-modal" onclick="closeModal('modal-rifa')">&times;</span><h3>Nueva Rifa</h3>
+<div class="form-row"><div class="input-group"><label>Nombre de la Rifa</label><input type="text" id="rifa-name" placeholder="Ej: Gira de Estudios"></div><div class="input-group"><label>Fecha del sorteo</label><input type="date" id="rifa-date"></div></div>
+<div class="input-group"><label>Total de números</label><input type="text" value="205 (fijo para todas las rifas)" disabled></div>
+<div class="input-group"><label>Premios (el N°1 es el premio mayor)</label><div id="prize-edit-list"></div><button type="button" class="btn btn-sm btn-info" onclick="addPrizeRow()">+ Agregar premio</button></div>
+<div class="input-group"><label>Números vendidos</label>
+<div class="load-tabs"><div class="load-tab active" id="tab-range" onclick="switchLoadTab('range')">✍️ Rango de texto</div><div class="load-tab" id="tab-csv" onclick="switchLoadTab('csv')">📄 Importar CSV</div></div>
+<div class="load-panel active" id="panel-range"><textarea id="range-input" rows="2" placeholder="Ej: 1-40, 45, 50-90, 100-150" oninput="updateRangeCount()" style="width:100%; padding:0.7rem; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); font-family:inherit; font-size:0.95rem;"></textarea><div class="numbers-detected" id="range-count">0 números detectados</div></div>
+<div class="load-panel" id="panel-csv"><div class="file-drop" id="file-drop" onclick="document.getElementById('file-input').click()">📄 Toca para elegir un archivo CSV</div><input type="file" id="file-input" accept=".csv" style="display:none;" onchange="handleFileSelect(event)"><p style="font-size:0.75rem; color:var(--text-light); margin-top:6px;">Columnas esperadas: <b>numero</b> y, opcional, <b>comprador</b>. Si tienes un Excel, guárdalo como CSV primero (Excel: Archivo → Guardar como → CSV).</p></div>
+</div>
+<button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="saveNewRifa()">Crear Rifa</button>
+</div></div>
 <script src="js/core/utils.js"></script>
 <script src="js/tabs/dashboard.js"></script>
 <script src="js/tabs/curso.js"></script>
@@ -246,6 +272,7 @@
 <script src="js/tabs/egresos.js"></script>
 <script src="js/tabs/morosidad.js"></script>
 <script src="js/tabs/votaciones.js"></script>
+<script src="js/tabs/rifas.js"></script>
 <script src="js/tabs/transparencia.js"></script>
 <script src="js/tabs/movimientos.js"></script>
 <script src="js/tabs/config.js"></script>

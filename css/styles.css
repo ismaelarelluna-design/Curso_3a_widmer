@@ -218,5 +218,50 @@ th { background: var(--hover); font-weight: 600; color: var(--text-light); } tr:
 .pdf-export .card, .pdf-export .stat-card, .pdf-export .morosidad-card-slim { border-color: #ddd !important; box-shadow: none !important; transform: none !important; }
 .pdf-export .progress-bar { background: var(--success) !important; box-shadow: none !important; }
 
+/* ===== Rifas ===== */
+.back-link { color: var(--neon-cyan); font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 14px; }
+.rifa-meta { display: flex; gap: 14px; margin-top: 10px; font-size: 0.82rem; color: var(--text-light); flex-wrap: wrap; }
+.rifa-meta b { color: var(--text); }
+.numbers-summary { display: flex; gap: 10px; margin: 12px 0 18px; }
+.num-stat { flex: 1; text-align: center; background: var(--hover); border: 1px solid var(--border); border-radius: 10px; padding: 10px 6px; }
+.num-stat .n { font-size: 1.3rem; font-weight: 800; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.num-stat .l { font-size: 0.7rem; color: var(--text-light); margin-top: 2px; }
+.prizes-list { margin: 14px 0; }
+.prize-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; }
+.prize-rank, .prize-edit-rank { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; flex-shrink: 0; color: #fff; }
+.prize-name { flex: 1; font-size: 0.92rem; }
+.prize-winner { font-size: 0.8rem; color: var(--neon-lime); font-weight: 700; }
+.prize-edit-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.prize-edit-row input { flex: 1; padding: 0.6rem 0.7rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 0.9rem; }
+.load-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.load-tab { flex: 1; padding: 8px; text-align: center; border-radius: 8px; border: 1px solid var(--border); font-size: 0.8rem; cursor: pointer; color: var(--text-light); }
+.load-tab.active { border-color: var(--neon-cyan); color: var(--neon-cyan); background: rgba(0,229,255,0.08); }
+.load-panel { display: none; }
+.load-panel.active { display: block; }
+.numbers-detected { font-size: 0.8rem; margin-top: 6px; color: var(--neon-lime); }
+.file-drop { border: 1px dashed var(--border); border-radius: 8px; padding: 18px; text-align: center; font-size: 0.85rem; color: var(--text-light); cursor: pointer; }
+.file-drop.has-file { border-color: var(--neon-lime); color: var(--neon-lime); }
+.draw-stage { text-align: center; padding: 20px 10px 6px; }
+.draw-stage h3 { margin: 0 0 4px; font-size: 1.05rem; }
+.draw-stage .drawing-for { color: var(--neon-amber); font-size: 0.85rem; margin-bottom: 18px; }
+.roulette-box { background: #05070f; border: 2px solid var(--neon-cyan); border-radius: 16px; padding: 26px 10px; margin: 0 auto 18px; box-shadow: 0 0 30px rgba(0,229,255,0.35), inset 0 0 20px rgba(0,229,255,0.08); position: relative; overflow: hidden; }
+.roulette-box.grand { border-color: var(--neon-amber); box-shadow: 0 0 40px rgba(255,184,0,0.45), inset 0 0 24px rgba(255,184,0,0.12); }
+.roulette-number { font-size: 3.2rem; font-weight: 900; letter-spacing: 2px; color: var(--neon-cyan); text-shadow: 0 0 18px rgba(0,229,255,0.8), 0 0 40px rgba(0,229,255,0.4); font-variant-numeric: tabular-nums; }
+@keyframes numberLandPulse { 0% { transform: scale(1); } 30% { transform: scale(1.3); } 60% { transform: scale(0.94); } 100% { transform: scale(1.06); } }
+.roulette-number.landed { color: var(--neon-lime); text-shadow: 0 0 22px rgba(57,255,20,0.9), 0 0 50px rgba(57,255,20,0.5); animation: numberLandPulse 0.7s ease; }
+.winner-reveal { margin-top: 6px; opacity: 0; transform: scale(0.5); transition: opacity .4s ease, transform .4s cubic-bezier(.34,1.56,.64,1); }
+.winner-reveal.show { opacity: 1; transform: scale(1); }
+.winner-reveal .trophy { font-size: 0; height: 0; transition: font-size .35s ease .1s, height .35s ease .1s; }
+.winner-reveal.show .trophy { font-size: 2.6rem; height: auto; margin-bottom: 2px; }
+.winner-reveal .grand-label { display: none; color: var(--neon-amber); font-weight: 800; font-size: 0.85rem; letter-spacing: 1px; margin-bottom: 4px; text-shadow: 0 0 12px rgba(255,184,0,0.7); }
+.winner-reveal.grand .grand-label { display: block; }
+.winner-reveal.grand .name { font-size: 1.5rem; background: linear-gradient(90deg, var(--neon-amber), #fff, var(--neon-amber)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.winner-reveal .name { font-size: 1.15rem; font-weight: 800; color: var(--text); }
+.winner-reveal .sub { font-size: 0.8rem; color: var(--text-light); margin-top: 2px; }
+.rifa-results-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+.rifa-results-table th { text-align: left; color: var(--text-light); font-weight: 600; font-size: 0.75rem; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.rifa-results-table td { padding: 8px; border-bottom: 1px solid var(--border); }
+.rifa-search-input { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 0.88rem; margin-bottom: 10px; }
+
 @media (max-width: 1024px) { .mobile-menu-btn { display: block; } .sidebar { position: fixed; left: -260px; top: 0; height: 100%; width: 260px; transition: left 0.3s ease; z-index: 100; } .sidebar.active { left: 0; } .nav-item span { display: inline; } .top-bar { padding: 0.8rem 1rem; } .content-area { padding: 1rem; } .chart-row { grid-template-columns: 1fr; } .month-selector { gap: 0.3rem; } .month-btn { padding: 0.5rem 0.9rem; font-size: 0.85rem; } .transparency-header { flex-direction: column; align-items: flex-start; } .bank-info-grid { grid-template-columns: repeat(2, 1fr); } .stats-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); } .quick-actions { justify-content: center; } .morosidad-grid { grid-template-columns: 1fr; } .voucher-header-prof { flex-direction: column; gap: 10px; text-align: center; } .voucher-payment-details { grid-template-columns: 1fr; } }
 @media (min-width: 1025px) { .sidebar { position: relative; left: 0; } .menu-overlay { display: none !important; } }
