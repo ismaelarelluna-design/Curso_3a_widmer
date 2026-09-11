@@ -1,5 +1,7 @@
 function toggleMobileMenu() { const s=document.getElementById('sidebar'), o=document.getElementById('menuOverlay'); s.classList.toggle('active'); o.classList.toggle('active'); }
 const formatCLP = n => new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',minimumFractionDigits:0}).format(n);
+// Escapa texto libre antes de insertarlo con innerHTML (evita XSS)
+const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const closeModal = id => document.getElementById(id).classList.remove('active');
 window.onclick = e => { if(e.target.classList.contains('modal')) e.target.classList.remove('active'); }
 const safeBase64 = (data) => { if (!data) return null; const clean = data.replace(/\s/g, ''); return clean.startsWith('data:') ? clean : `data:image/jpeg;base64,${clean}`; };

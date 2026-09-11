@@ -253,16 +253,25 @@
 </div>
 <div id="modal-votacion" class="modal"><div class="modal-content" style="max-width:650px;"><span class="close-modal" onclick="closeModal('modal-votacion')">&times;</span><h3>Nueva Votación</h3><div class="form-row"><div class="input-group"><label>Nombre del Evento</label><input type="text" id="votacion-event" placeholder="Ej: Paseo de fin de año"></div><div class="input-group"><label>Fecha</label><input type="date" id="votacion-date"></div></div><div id="votacion-questions-list"></div><button type="button" class="btn btn-sm btn-warning" onclick="addVotacionQuestionBlock()" style="margin-bottom:1rem;">+ Agregar otra pregunta</button><button class="btn btn-primary" style="margin-top:0.5rem;" onclick="saveVotacion()">Crear Votación</button></div></div>
 <div id="modal-votacion-results" class="modal"><div class="modal-content" style="max-width:750px;"><span class="close-modal" onclick="closeModal('modal-votacion-results')">&times;</span><h3 id="votacion-results-title">Resultados</h3><p id="votacion-results-event" style="color:var(--text-light); font-size:0.9rem; margin-bottom:1.2rem;"></p><div id="votacion-results-body"></div><div style="display:flex; gap:0.5rem; margin-top:1.5rem; flex-wrap:wrap;"><button class="btn btn-sm btn-success" onclick="exportVotacionCSV()">📊 Exportar Excel (CSV)</button><button class="btn btn-primary" onclick="closeModal('modal-votacion-results')">Cerrar</button></div></div></div>
-<div id="modal-rifa" class="modal"><div class="modal-content" style="max-width:520px;"><span class="close-modal" onclick="closeModal('modal-rifa')">&times;</span><h3>Nueva Rifa</h3>
-<div class="form-row"><div class="input-group"><label>Nombre de la Rifa</label><input type="text" id="rifa-name" placeholder="Ej: Gira de Estudios"></div><div class="input-group"><label>Fecha del sorteo</label><input type="date" id="rifa-date"></div></div>
+<div id="modal-rifa" class="modal"><div class="modal-content rifa-modal-content"><span class="close-modal" onclick="closeModal('modal-rifa')">&times;</span><h3 id="rifa-modal-title">Nueva Rifa</h3>
+<div class="form-row"><div class="input-group"><label>Nombre de la Rifa</label><input type="text" id="rifa-name" placeholder="Ej: Gira de Estudios" maxlength="80"></div><div class="input-group"><label>Fecha del sorteo</label><input type="date" id="rifa-date"></div></div>
 <div class="input-group"><label>Total de números</label><input type="text" value="205 (fijo para todas las rifas)" disabled></div>
-<div class="input-group"><label>Premios (el N°1 es el premio mayor)</label><div id="prize-edit-list"></div><button type="button" class="btn btn-sm btn-info" onclick="addPrizeRow()">+ Agregar premio</button></div>
-<div class="input-group"><label>Números vendidos</label>
-<div class="load-tabs"><div class="load-tab active" id="tab-range" onclick="switchLoadTab('range')">✍️ Rango de texto</div><div class="load-tab" id="tab-csv" onclick="switchLoadTab('csv')">📄 Importar CSV</div></div>
-<div class="load-panel active" id="panel-range"><textarea id="range-input" rows="2" placeholder="Ej: 1-40, 45, 50-90, 100-150" oninput="updateRangeCount()" style="width:100%; padding:0.7rem; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); font-family:inherit; font-size:0.95rem;"></textarea><div class="numbers-detected" id="range-count">0 números detectados</div></div>
-<div class="load-panel" id="panel-csv"><div class="file-drop" id="file-drop" onclick="document.getElementById('file-input').click()">📄 Toca para elegir un archivo CSV</div><input type="file" id="file-input" accept=".csv" style="display:none;" onchange="handleFileSelect(event)"><p style="font-size:0.75rem; color:var(--text-light); margin-top:6px;">Columnas esperadas: <b>numero</b> y, opcional, <b>comprador</b>. Si tienes un Excel, guárdalo como CSV primero (Excel: Archivo → Guardar como → CSV).</p></div>
+<div class="input-group"><label>Premios (el N°1 es el premio mayor)</label><div id="prize-edit-list"></div><button type="button" class="btn btn-sm btn-info" onclick="addPrizeRow(); scheduleRifaDraft();">+ Agregar premio</button></div>
+<div class="input-group"><label>Números vendidos <span class="rifa-hint">— solo cuentan los que tienen nombre. Si no sabes quién lo compró, escribe "Sin identificar".</span></label>
+<div class="rifa-sold-count" id="rifa-sold-count"></div>
+<div class="rifa-tools">
+<div class="rifa-tool-title">Asignar varios números a una persona</div>
+<div class="rifa-assign-row"><input type="text" id="rifa-assign-range" placeholder="Números. Ej: 10-30, 45"><input type="text" id="rifa-assign-name" placeholder="Nombre del comprador" list="rifa-buyers-datalist" maxlength="60" autocomplete="off"></div>
+<div class="rifa-assign-actions"><button type="button" class="btn btn-sm btn-primary" onclick="rifaAssignRange()">✔ Asignar</button><button type="button" class="btn btn-sm btn-danger" onclick="rifaClearRange()">🧹 Liberar números</button><button type="button" class="btn btn-sm btn-info" onclick="document.getElementById('file-input').click()">📄 Importar CSV</button></div>
+<input type="file" id="file-input" accept=".csv,text/csv" style="display:none;" onchange="handleFileSelect(event)">
+<div class="rifa-tool-msg" id="rifa-tool-msg"></div>
 </div>
-<button class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="saveNewRifa()">Crear Rifa</button>
+<div class="rifa-grid-toolbar"><div class="rifa-filter-btns"><button type="button" class="rifa-filter active" data-filter="all" onclick="setRifaGridFilter('all')">Todos</button><button type="button" class="rifa-filter" data-filter="sold" onclick="setRifaGridFilter('sold')">Vendidos</button><button type="button" class="rifa-filter" data-filter="free" onclick="setRifaGridFilter('free')">Libres</button></div><input type="search" id="rifa-grid-search" placeholder="Buscar N° o nombre" oninput="applyRifaGridFilter()"></div>
+<div class="rifa-grid-note" id="rifa-grid-note" hidden></div>
+<div class="rifa-num-grid" id="rifa-num-grid"></div>
+<datalist id="rifa-buyers-datalist"></datalist>
+</div>
+<button id="rifa-save-btn" class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="saveRifa()">Crear Rifa</button>
 </div></div>
 <script src="js/core/utils.js"></script>
 <script src="js/tabs/dashboard.js"></script>

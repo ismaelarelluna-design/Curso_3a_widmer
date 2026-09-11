@@ -263,5 +263,42 @@ th { background: var(--hover); font-weight: 600; color: var(--text-light); } tr:
 .rifa-results-table td { padding: 8px; border-bottom: 1px solid var(--border); }
 .rifa-search-input { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 0.88rem; margin-bottom: 10px; }
 
+/* Rifas: editor con lista de 205 números */
+.rifa-modal-content { max-width: 780px; }
+.rifa-hint { font-size: 0.78rem; color: var(--text-light); font-weight: normal; }
+.rifa-sold-count { font-size: 0.9rem; margin: 2px 0 10px; color: var(--text-light); }
+.rifa-sold-count b { color: var(--text); }
+.rifa-tools { border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 10px; background: var(--hover); }
+.rifa-tool-title { font-size: 0.8rem; font-weight: 600; color: var(--text-light); margin-bottom: 6px; }
+.rifa-assign-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 6px; }
+.rifa-assign-row input, .rifa-grid-toolbar input { width: 100%; padding: 0.6rem 0.7rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 1rem; }
+.rifa-assign-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.rifa-tool-msg { font-size: 0.8rem; margin-top: 6px; color: var(--success); min-height: 1em; }
+.rifa-tool-msg.error { color: var(--danger); }
+.rifa-grid-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.rifa-grid-toolbar input { flex: 1; min-width: 140px; }
+.rifa-filter-btns { display: flex; gap: 4px; }
+.rifa-filter { padding: 6px 12px; border-radius: 16px; border: 1px solid var(--border); background: var(--bg); color: var(--text-light); font-size: 0.8rem; cursor: pointer; }
+.rifa-filter.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+.rifa-grid-note { font-size: 0.8rem; color: #92400e; background: #fef3c7; border-radius: 8px; padding: 6px 10px; margin-bottom: 8px; }
+.rifa-num-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px; max-height: 48vh; overflow-y: auto; padding: 6px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }
+.rifa-num-row { display: flex; align-items: center; gap: 6px; padding: 4px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
+.rifa-num-row[hidden], .rifa-sold-item[hidden] { display: none; }
+.rifa-num-row.sold { border-color: var(--success); background: rgba(16, 185, 129, 0.08); }
+.rifa-num-badge { flex-shrink: 0; width: 42px; text-align: center; font-weight: 800; font-size: 0.85rem; color: var(--text-light); font-variant-numeric: tabular-nums; }
+.rifa-num-row.sold .rifa-num-badge { color: var(--success); }
+.rifa-num-grid .rifa-buyer-input { flex: 1; min-width: 0; padding: 0.45rem 0.55rem; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--text); font-size: 1rem; }
+.rifa-num-grid .rifa-buyer-input:focus { outline: none; border-color: var(--primary); background: var(--bg); }
+.rifa-buyer-input::placeholder { color: var(--text-light); opacity: 0.6; }
+.rifa-sold-details { margin-top: 14px; }
+.rifa-sold-details summary { cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text-light); padding: 6px 0; }
+.rifa-sold-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px 12px; max-height: 320px; overflow-y: auto; font-size: 0.85rem; }
+.rifa-sold-item { display: flex; gap: 8px; padding: 4px 0; border-bottom: 1px dotted var(--border); }
+.rifa-sold-item b { font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) {
+  .rifa-modal-content { padding: 1.2rem; width: 95%; }
+  .rifa-assign-row { grid-template-columns: 1fr; }
+  .rifa-num-grid { grid-template-columns: 1fr; max-height: 55vh; }
+}
 @media (max-width: 1024px) { .mobile-menu-btn { display: block; } .sidebar { position: fixed; left: -260px; top: 0; height: 100%; width: 260px; transition: left 0.3s ease; z-index: 100; } .sidebar.active { left: 0; } .nav-item span { display: inline; } .top-bar { padding: 0.8rem 1rem; } .content-area { padding: 1rem; } .chart-row { grid-template-columns: 1fr; } .month-selector { gap: 0.3rem; } .month-btn { padding: 0.5rem 0.9rem; font-size: 0.85rem; } .transparency-header { flex-direction: column; align-items: flex-start; } .bank-info-grid { grid-template-columns: repeat(2, 1fr); } .stats-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); } .quick-actions { justify-content: center; } .morosidad-grid { grid-template-columns: 1fr; } .voucher-header-prof { flex-direction: column; gap: 10px; text-align: center; } .voucher-payment-details { grid-template-columns: 1fr; } }
 @media (min-width: 1025px) { .sidebar { position: relative; left: 0; } .menu-overlay { display: none !important; } }
