@@ -608,6 +608,9 @@ ${actionsHTML}
 <input type="search" class="rifa-search-input" id="rifa-sold-search" oninput="filterRifaSoldList()" placeholder="Buscar N° o nombre">
 <div class="rifa-sold-list" id="rifa-sold-list">${soldListHTML}</div>
 </details>
+<div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border); text-align:right;">
+<button class="btn btn-sm btn-danger" id="rifa-delete-btn" onclick="deleteRifa()">🗑️ Eliminar rifa</button>
+</div>
 </div>
 <div class="card" id="rifa-draw-card" style="display:none;">
 <div class="draw-stage">
@@ -627,6 +630,36 @@ ${actionsHTML}
 </div>`;
 
     if (rifa.drawn) renderRifaResultsTable(rifa.results, rifa.soldNumbers.length);
+}
+
+// Borrado definitivo (no hay papelera en Firestore). Para una rifa ya sorteada
+// se pide escribir su nombre, porque se pierden los resultados del sorteo.
+async function deleteRifa() {
+    const id = currentRifaId;
+    const rifa = rifas.find(r => r.id === id);
+    if (!rifa) return;
+    const detalle = `"${rifa.name}" (${formatRifaDate(rifa.date)}) con ${plural(rifa.soldNumbers.length, 'número vendido', 'números vendidos')}`;
+    if (rifa.drawn) {
+        const typed = prompt(`Esta rifa YA FUE SORTEADA y se perderán sus resultados.\n\nPara confirmar, escribe el nombre de la rifa:\n${rifa.name}`);
+        if (typed === null) return;
+        if (buyerKey(typed) !== buyerKey(rifa.name)) return alert('El nombre no coincide. No se eliminó nada.');
+    } else if (!confirm(`¿Eliminar la rifa ${detalle}?\n\nEsta acción no se puede deshacer.`)) {
+        return;
+    }
+    const btn = document.getElementById('rifa-delete-btn');
+    if (btn) btn.disabled = true;
+    try {
+        await db.collection('rifas').doc(id).delete();
+        rifas = rifas.filter(r => r.id !== id);
+        try { localStorage.removeItem(`${APP_KEY}_rifa_draft_${id}`); } catch (e) { /* nada */ }
+        logActivity('ELIMINAR_RIFA', `Eliminó la rifa "${rifa.name}" (${rifa.soldNumbers.length} números vendidos)`);
+        closeRifaDetail();
+        renderRifas();
+    } catch (e) {
+        console.error(e);
+        if (btn) btn.disabled = false;
+        alert('No se pudo eliminar la rifa. Revisa tu conexión e intenta de nuevo.');
+    }
 }
 
 function filterRifaSoldList() {

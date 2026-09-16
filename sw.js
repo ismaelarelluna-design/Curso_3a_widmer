@@ -1,5 +1,5 @@
 // Service Worker — App Curso 3A (Colegio Alberto Widmer)
-const CACHE_NAME = 'cbs4-v8';
+const CACHE_NAME = 'cbs4-v9';
 const ASSETS = [
   '/',
   '/index.html',
