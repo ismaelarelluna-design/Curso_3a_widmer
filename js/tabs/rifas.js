@@ -52,26 +52,80 @@ async function loadRifas() {
     }
 }
 
+const rifasState = { q: '', from: '', to: '', sort: 'recent', status: 'all' };
+function rifasSetQuery(v) { rifasState.q = v; renderRifasList(); }
+function rifasSetFrom(v) { rifasState.from = v; renderRifasList(); }
+function rifasSetTo(v) { rifasState.to = v; renderRifasList(); }
+function rifasSetSort(v) { rifasState.sort = v; renderRifasList(); }
+function rifasSetStatus(v) { rifasState.status = v; renderRifasList(); }
+function rifasClearFilters() {
+    Object.assign(rifasState, { q: '', from: '', to: '', status: 'all' });
+    document.getElementById('rifas-q').value = '';
+    document.getElementById('rifas-from').value = '';
+    document.getElementById('rifas-to').value = '';
+    document.getElementById('rifas-status').value = 'all';
+    renderRifasList();
+}
+
 function renderRifas() {
-    const list = document.getElementById('rifas-list');
-    if (!list) return;
+    const banner = document.getElementById('rifas-banner');
+    if (!banner) return;
+    const list = rifas || [];
+    const sorteadas = list.filter(r => r.drawn).length;
+    const vendidos = list.reduce((n, r) => n + r.soldNumbers.length, 0);
+    banner.innerHTML = `
+<div class="kpi-banner-title"><h3>🎟️ Rifas</h3><span class="sub">Carga los números vendidos, define los premios y sortea con animación</span></div>
+<div class="kpi brand"><div class="kpi-label">Rifas creadas</div><div class="kpi-value">${list.length}</div><div class="kpi-foot">en el año</div></div>
+<div class="kpi warn"><div class="kpi-label">Pendientes</div><div class="kpi-value">${list.length - sorteadas}</div><div class="kpi-foot">por sortear</div></div>
+<div class="kpi ok"><div class="kpi-label">Sorteadas</div><div class="kpi-value">${sorteadas}</div><div class="kpi-foot">con ganadores</div></div>
+<div class="kpi info"><div class="kpi-label">Números vendidos</div><div class="kpi-value">${vendidos}</div><div class="kpi-foot">sumando todas las rifas</div></div>`;
+    renderRifasList();
+}
+
+function renderRifasList() {
+    const container = document.getElementById('rifas-list');
+    if (!container) return;
+    const mode = getViewMode('rifas', 'cards');
+    document.getElementById('rifas-view-toggle').innerHTML = viewToggleHTML('rifas', 'renderRifasList', 'cards');
+
     if (!rifas || rifas.length === 0) {
-        list.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--text-light);"><p style="font-size:1.1rem;">Aún no hay rifas creadas.</p></div>';
+        container.className = '';
+        container.innerHTML = '<div class="empty-state"><p style="font-size:1.1rem;">Aún no hay rifas creadas.</p></div>';
+        document.getElementById('rifas-count').textContent = '';
         return;
     }
-    list.innerHTML = rifas.map(r => {
-        const badge = r.drawn ? '<span class="badge badge-paid">Sorteada</span>' : '<span class="badge badge-pending">Pendiente</span>';
-        return `<div class="card" style="margin-bottom:1rem; border-left:4px solid var(--neon-magenta); cursor:pointer;" onclick="openRifaDetail('${r.id}')">
-<div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
-<div>
-<div style="font-size:0.8rem; color:var(--text-light); margin-bottom:0.2rem;">${formatRifaDate(r.date)}</div>
-<strong style="font-size:1.05rem;">${escapeRifaHtml(r.name)}</strong>
-</div>
-${badge}
-</div>
+    const st = rifasState;
+    const q = searchKey(st.q);
+    const items = rifas.filter(r => {
+        if (st.status === 'drawn' && !r.drawn) return false;
+        if (st.status === 'pending' && r.drawn) return false;
+        if (st.from && (!r.date || r.date < st.from)) return false;
+        if (st.to && (!r.date || r.date > st.to)) return false;
+        return !q || searchKey(r.name).includes(q);
+    });
+    items.sort((a, b) => st.sort === 'oldest' ? (a.date || '').localeCompare(b.date || '') : (st.sort === 'name' ? (a.name || '').localeCompare(b.name || '', 'es') : (b.date || '').localeCompare(a.date || '')));
+    document.getElementById('rifas-count').textContent = `${items.length} de ${rifas.length}`;
+    document.getElementById('rifas-clear').hidden = !(st.q || st.from || st.to || st.status !== 'all');
+
+    if (items.length === 0) {
+        container.className = '';
+        container.innerHTML = '<div class="empty-state">No hay rifas que coincidan con los filtros.</div>';
+        return;
+    }
+    const chip = r => r.drawn ? '<span class="chip ok">✔ Sorteada</span>' : '<span class="chip warn">Pendiente</span>';
+    const open = id => `onclick="openRifaDetail('${id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openRifaDetail('${id}')}" role="button" tabindex="0"`;
+    if (mode === 'cards') {
+        container.className = 'data-grid';
+        container.innerHTML = items.map(r => `<div class="data-card clickable ${r.drawn ? 'is-paid' : ''}" ${open(r.id)}>
+<div class="data-card-head"><div class="row-main"><div class="student-name">${escapeRifaHtml(r.name)}</div><div class="student-detail">📅 ${formatRifaDate(r.date)}</div></div>${chip(r)}</div>
 <div class="rifa-meta"><span>🎫 <b>${r.soldNumbers.length}</b> de ${r.totalNumbers} vendidos</span><span>🏆 <b>${r.prizes.length}</b> premio${r.prizes.length === 1 ? '' : 's'}</span></div>
-</div>`;
-    }).join('');
+<div class="open-hint">Abrir rifa →</div></div>`).join('');
+    } else {
+        container.className = 'data-list';
+        container.innerHTML = items.map(r => `<div class="data-row clickable ${r.drawn ? 'is-paid' : ''}" ${open(r.id)}>
+<div class="row-main"><div class="row-title">${escapeRifaHtml(r.name)}</div><div class="row-sub">📅 ${formatRifaDate(r.date)} · 🎫 ${r.soldNumbers.length}/${r.totalNumbers} vendidos · 🏆 ${r.prizes.length} premio${r.prizes.length === 1 ? '' : 's'}</div></div>${chip(r)}
+<span class="open-hint">Abrir →</span></div>`).join('');
+    }
 }
 
 // ===== Editor de rifa (crear / editar) =====

@@ -4,8 +4,7 @@ function renderTransparencia() {
     const tEgresos = appData.egresos.reduce((s, e) => s + e.amount, 0);
     const balance = (tCuotas + tExtras) - tEgresos;
     const cuotaMensual = appData.config.cuotaAmount || 5000;
-    const exemptCount = appData.students.filter(s => s.exemptYear).length;
-    const activeStudents = appData.students.length - exemptCount;
+    const activeStudents = getPayingStudents().length;
     const maxCuotasAnual = activeStudents * cuotaMensual * 10;
     const porcentajeRecaudacion = maxCuotasAnual > 0 ? ((tCuotas / maxCuotasAnual) * 100).toFixed(1) : 0;
     const promedioExtra = activeStudents > 0 ? (tExtras / activeStudents).toFixed(0) : 0;
@@ -38,7 +37,7 @@ function renderTransparencia() {
     const pendArr = ALL_MONTHS.map((m, idx) => {
         if (idx > currentMonthIdx) return 0;
         const c = appData.cuotas.find(x => x.month === `2026-${m}`);
-        const pagados = c ? c.paidStudents.length : 0;
+        const pagados = c ? countPaidAmongPaying(c.paidStudents) : 0;
         return Math.max(activeStudents - pagados, 0);
     });
     createChart('transChartPagosPendientes', { type: 'bar', data: { labels: ALL_MONTHS.map(m => MONTH_NAMES_SHORT[m]), datasets: [{ label: 'Pagados', data: utd, backgroundColor: (c) => neonGradient(c.chart.ctx, c.chart.chartArea, '#00ff9d', '#00e5ff'), stack: 'cuotas', borderRadius: 4 }, { label: 'Pendientes', data: pendArr, backgroundColor: (c) => neonGradient(c.chart.ctx, c.chart.chartArea, '#ff2e63', '#ff2ee6'), stack: 'cuotas', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: axisColor } } }, scales: { y: { beginAtZero: true, stacked: true, ticks: { color: axisColor, stepSize: 5 }, grid: { color: gridColor } }, x: { stacked: true, ticks: { color: axisColor }, grid: { display: false } } } } });

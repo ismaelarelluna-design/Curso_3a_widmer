@@ -14,13 +14,81 @@ function syncCuotaValues() { const base = appData.config.cuotaAmount || 5000; if
 function initializeAllMonths() { ALL_MONTHS.forEach(m => { const k=`2026-${m}`; if(!appData.cuotas.find(c=>c.month===k)) appData.cuotas.push({month:k, amountPer:appData.config.cuotaAmount||5000, paidStudents:[], total:0}); }); }
 async function saveData() { if (currentUser === 'PÚBLICO') return; try { await db.collection('app_data').doc('curso3a').set(appData); lastSyncTime = new Date(); renderAll(); } catch (e) { console.error("Error al guardar en Firebase:", e); alert("❌ No se pudo guardar."); } }
 function logActivity(a, d) { if (currentUser === 'PÚBLICO') return; appData.logs.unshift({ ts: new Date().toISOString(), user: currentUser, action: a, details: d }); saveData(); }
-function checkSession() { const u = localStorage.getItem(APP_KEY + '_user'); if(u && USERS[u]) { currentUser = u; document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-container').style.display = 'flex'; document.getElementById('current-user-display').textContent = currentUser; updateMonthSelector(); renderAll(); } else { document.getElementById('login-screen').style.display = 'flex'; document.getElementById('app-container').style.display = 'none'; } }
+function checkSession() { const u = localStorage.getItem(APP_KEY + '_user'); if(u && USERS[u]) { currentUser = u; document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-container').style.display = 'flex'; document.getElementById('current-user-display').textContent = currentUser; applyNavGroupState(); applyNavCollapsedState(); updateMonthBarVisibility('dashboard'); updateMonthSelector(); renderAll(); } else { document.getElementById('login-screen').style.display = 'flex'; document.getElementById('app-container').style.display = 'none'; } }
 function handleLogin() { const u = document.getElementById('login-user').value.trim().toUpperCase(); const p = document.getElementById('login-pass').value; if(USERS[u] === p) { currentUser = u; localStorage.setItem(APP_KEY+'_user', u); document.getElementById('login-error').style.display='none'; checkSession(); } else document.getElementById('login-error').style.display='block'; }
 function logout() { localStorage.removeItem(APP_KEY+'_user'); currentUser=null; location.reload(); }
 function toggleTheme() { if (currentUser === 'PÚBLICO') return; const d = document.body.getAttribute('data-theme') === 'dark'; document.body.setAttribute('data-theme', d ? 'light' : 'dark'); document.getElementById('theme-toggle').classList.toggle('active'); appData.config.theme = d ? 'light' : 'dark'; saveData(); updateChartsTheme(); }
 function setMonth(m) { currentMonth = m; updateMonthSelector(); renderAll(); }
-function updateMonthSelector() { document.querySelectorAll('.month-btn').forEach(b => b.classList.toggle('active', b.dataset.month === currentMonth)); document.getElementById('chart-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('cuota-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('trans-period').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('trans-expenses-month').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('progress-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; document.getElementById('egresos-month-label').textContent = `${MONTH_NAMES[currentMonth]} 2026`; }
-function switchTab(tab) { if (currentUser === 'PÚBLICO') return; document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById('tab-'+tab).classList.add('active'); event.currentTarget.classList.add('active'); document.getElementById('sidebar').classList.remove('active'); document.getElementById('menuOverlay').classList.remove('active'); const titles = {'dashboard':'Dashboard General','curso':'Listado del Curso','ingresos':'Ingresos Extra','cuotas':'Pago de Cuotas','egresos':'Gastos','morosidad':'Morosidad','votaciones':'Votaciones','rifas':'Rifas','transparencia':'Transparencia','movimientos':'Movimientos','config':'Configuración'}; document.getElementById('page-title').textContent = titles[tab]; renderAll(); }
+function updateMonthSelector() {
+    document.querySelectorAll('.month-btn').forEach(b => b.classList.toggle('active', b.dataset.month === currentMonth));
+    const label = `${MONTH_NAMES[currentMonth]} 2026`;
+    ['chart-month-label', 'cuota-month-label', 'trans-period', 'trans-expenses-month', 'progress-month-label', 'egresos-month-label'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = label; });
+}
+// Pestañas donde el selector de meses cambia lo que se muestra. En el resto se oculta.
+const MONTH_AWARE_TABS = ['dashboard', 'cuotas', 'egresos', 'transparencia'];
+const TAB_TITLES = { dashboard: 'Panel Central', curso: 'Listado del Curso', ingresos: 'Ingresos Extras', cuotas: 'Pago de Cuotas', egresos: 'Gastos', morosidad: 'Morosidad', votaciones: 'Votaciones', rifas: 'Rifas', transparencia: 'Transparencia', movimientos: 'Movimientos', config: 'Configuración' };
+// Grupos del menú lateral; se recuerda cuáles quedaron abiertos en este dispositivo.
+const NAV_GROUP_OF_TAB = { dashboard: 'finanzas', cuotas: 'finanzas', ingresos: 'finanzas', egresos: 'finanzas', morosidad: 'finanzas', curso: 'curso', votaciones: 'curso', rifas: 'curso', transparencia: 'publico', movimientos: 'admin', config: 'admin' };
+
+function loadNavGroupState() {
+    try { return JSON.parse(localStorage.getItem(APP_KEY + '_nav_groups')) || {}; } catch (e) { return {}; }
+}
+function saveNavGroupState(state) {
+    try { localStorage.setItem(APP_KEY + '_nav_groups', JSON.stringify(state)); } catch (e) { /* almacenamiento no disponible */ }
+}
+function setNavGroupOpen(groupId, open, animate) {
+    const group = document.querySelector(`.nav-group[data-group="${groupId}"]`);
+    if (!group) return;
+    const body = group.querySelector('.nav-group-body');
+    const header = group.querySelector('.nav-group-header');
+    group.classList.toggle('collapsed', !open);
+    header.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!animate) { body.style.transition = 'none'; requestAnimationFrame(() => { body.style.transition = ''; }); }
+}
+function toggleNavGroup(groupId) {
+    const group = document.querySelector(`.nav-group[data-group="${groupId}"]`);
+    if (!group) return;
+    const open = group.classList.contains('collapsed');
+    setNavGroupOpen(groupId, open, true);
+    const state = loadNavGroupState();
+    state[groupId] = open;
+    saveNavGroupState(state);
+}
+function applyNavGroupState() {
+    const state = loadNavGroupState();
+    document.querySelectorAll('.nav-group').forEach(g => {
+        const id = g.dataset.group;
+        setNavGroupOpen(id, state[id] !== false, false);
+    });
+}
+
+function switchTab(tab) {
+    if (currentUser === 'PÚBLICO') return;
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('sidebar').classList.remove('active');
+    document.getElementById('menuOverlay').classList.remove('active');
+    syncMenuButton();
+    document.getElementById('page-title').textContent = TAB_TITLES[tab] || tab;
+    // El grupo de la pestaña activa siempre queda a la vista
+    const group = NAV_GROUP_OF_TAB[tab];
+    if (group) {
+        const g = document.querySelector(`.nav-group[data-group="${group}"]`);
+        if (g && g.classList.contains('collapsed')) {
+            setNavGroupOpen(group, true, true);
+            const state = loadNavGroupState(); state[group] = true; saveNavGroupState(state);
+        }
+    }
+    updateMonthBarVisibility(tab);
+    const area = document.querySelector('.content-area'); if (area) area.scrollTop = 0;
+    renderAll();
+}
+function updateMonthBarVisibility(tab) {
+    const bar = document.getElementById('month-bar');
+    if (bar) bar.style.display = MONTH_AWARE_TABS.includes(tab) ? '' : 'none';
+}
+
 function renderAll() { renderDashboard(); renderCurso(); renderIngresos(); renderCuotas(); renderEgresos(); renderMorosidad(); renderVotaciones(); renderRifas(); renderTransparencia(); renderMovimientos(); renderConfig(); }
 
 init();

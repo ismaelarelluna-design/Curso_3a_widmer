@@ -31,34 +31,83 @@ async function loadVotaciones() {
     }
 }
 
+const votacionesState = { q: '', from: '', to: '', sort: 'recent' };
+function votacionesSetQuery(v) { votacionesState.q = v; renderVotacionesList(); }
+function votacionesSetFrom(v) { votacionesState.from = v; renderVotacionesList(); }
+function votacionesSetTo(v) { votacionesState.to = v; renderVotacionesList(); }
+function votacionesSetSort(v) { votacionesState.sort = v; renderVotacionesList(); }
+function votacionesClearFilters() {
+    Object.assign(votacionesState, { q: '', from: '', to: '' });
+    document.getElementById('votaciones-q').value = '';
+    document.getElementById('votaciones-from').value = '';
+    document.getElementById('votaciones-to').value = '';
+    renderVotacionesList();
+}
+
 function renderVotaciones() {
+    const banner = document.getElementById('votaciones-banner');
+    if (!banner) return;
+    const today = todayISO();
+    const proximas = votaciones.filter(v => v.date && v.date >= today).length;
+    const preguntas = votaciones.reduce((n, v) => n + v.questions.length, 0);
+    banner.innerHTML = `
+<div class="kpi-banner-title"><h3>🗳️ Votaciones</h3><span class="sub">Comparte el link con el curso y revisa los resultados en tiempo real</span></div>
+<div class="kpi brand"><div class="kpi-label">Votaciones creadas</div><div class="kpi-value">${votaciones.length}</div><div class="kpi-foot">en el año</div></div>
+<div class="kpi ok"><div class="kpi-label">Próximas</div><div class="kpi-value">${proximas}</div><div class="kpi-foot">fecha de hoy en adelante</div></div>
+<div class="kpi info"><div class="kpi-label">Realizadas</div><div class="kpi-value">${votaciones.length - proximas}</div><div class="kpi-foot">fecha ya pasada</div></div>
+<div class="kpi warn"><div class="kpi-label">Preguntas</div><div class="kpi-value">${preguntas}</div><div class="kpi-foot">entre todas las votaciones</div></div>`;
+    renderVotacionesList();
+}
+
+function renderVotacionesList() {
     const list = document.getElementById('votaciones-list');
     if (!list) return;
+    const mode = getViewMode('votaciones', 'cards');
+    document.getElementById('votaciones-view-toggle').innerHTML = viewToggleHTML('votaciones', 'renderVotacionesList', 'cards');
+
     if (votaciones.length === 0) {
-        list.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--text-light);"><p style="font-size:1.1rem;">Aún no hay votaciones creadas.</p></div>';
+        list.className = '';
+        list.innerHTML = '<div class="empty-state"><p style="font-size:1.1rem;">Aún no hay votaciones creadas.</p></div>';
+        document.getElementById('votaciones-count').textContent = '';
         return;
     }
-    list.innerHTML = votaciones.map(v => {
-        const fecha = v.date ? new Date(v.date + 'T00:00:00').toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' }) : '-';
-        const qCount = v.questions.length;
-        const preguntasHTML = v.questions.slice(0, 2).map(q => `<div style="font-size:0.9rem; color:var(--text-light); margin-top:0.3rem;">• ${q.question}</div>`).join('')
-            + (qCount > 2 ? `<div style="font-size:0.8rem; color:var(--text-light); margin-top:0.2rem;">+ ${qCount - 2} pregunta(s) más</div>` : '');
-        return `<div class="card" style="margin-bottom:1rem; border-left:4px solid var(--primary);">
-<div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
-<div>
-<div style="font-size:0.8rem; color:var(--text-light); margin-bottom:0.2rem;">${fecha} · <span class="badge" style="background:#e0f2fe; color:#0284c7;">${qCount} pregunta${qCount === 1 ? '' : 's'}</span></div>
-<strong style="font-size:1.05rem;">${v.eventName}</strong>
-${preguntasHTML}
-</div>
-<div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-<button class="btn btn-sm btn-info" onclick="copyVotacionLink('${v.id}')">🔗 Copiar Link</button>
-<button class="btn btn-sm btn-primary" onclick="openVotacionResults('${v.id}')">📊 Ver Resultados</button>
-<button class="btn btn-sm btn-warning" onclick="openVotacionModal('${v.id}')">✏️ Editar</button>
-<button class="btn btn-sm btn-danger" onclick="deleteVotacion('${v.id}')">🗑️ Eliminar Votación</button>
-</div>
-</div>
-</div>`;
-    }).join('');
+    const st = votacionesState;
+    const q = searchKey(st.q);
+    let items = votaciones.filter(v => {
+        if (st.from && (!v.date || v.date < st.from)) return false;
+        if (st.to && (!v.date || v.date > st.to)) return false;
+        return !q || searchKey(`${v.eventName} ${v.questions.map(x => x.question).join(' ')}`).includes(q);
+    });
+    items.sort((a, b) => st.sort === 'oldest' ? (a.date || '').localeCompare(b.date || '') : (st.sort === 'name' ? (a.eventName || '').localeCompare(b.eventName || '', 'es') : (b.date || '').localeCompare(a.date || '')));
+    document.getElementById('votaciones-count').textContent = `${items.length} de ${votaciones.length}`;
+    document.getElementById('votaciones-clear').hidden = !(st.q || st.from || st.to);
+
+    if (items.length === 0) {
+        list.className = '';
+        list.innerHTML = '<div class="empty-state">No hay votaciones que coincidan con los filtros.</div>';
+        return;
+    }
+    const actions = v => `<button type="button" class="act act-info" onclick="copyVotacionLink('${v.id}')">${ico('link')} Copiar link</button>
+<button type="button" class="act act-solid-brand" onclick="openVotacionResults('${v.id}')">${ico('chart')} Ver resultados</button>
+<button type="button" class="act act-warn" onclick="openVotacionModal('${v.id}')">${ico('edit')} Editar</button>
+<button type="button" class="act act-danger" onclick="deleteVotacion('${v.id}')">${ico('trash')} Eliminar</button>`;
+
+    if (mode === 'cards') {
+        list.className = 'data-grid';
+        list.innerHTML = items.map(v => {
+            const qCount = v.questions.length;
+            const preguntasHTML = v.questions.slice(0, 2).map(q => `<div class="row-sub wrap">• ${escapeHtml(q.question)}</div>`).join('')
+                + (qCount > 2 ? `<div class="row-sub">+ ${qCount - 2} pregunta(s) más</div>` : '');
+            return `<div class="data-card"><div class="data-card-head"><div class="row-main"><div class="student-name">${escapeHtml(v.eventName)}</div>
+<div class="student-detail">📅 ${formatShortDate(v.date)}</div></div><span class="chip info">${qCount} pregunta${qCount === 1 ? '' : 's'}</span></div>
+<div>${preguntasHTML}</div><div class="data-card-actions">${actions(v)}</div></div>`;
+        }).join('');
+    } else {
+        list.className = 'data-list';
+        list.innerHTML = items.map(v => `<div class="data-row"><div class="row-main"><div class="row-title">${escapeHtml(v.eventName)}</div>
+<div class="row-sub">📅 ${formatShortDate(v.date)}</div></div><span class="chip info">${v.questions.length} pregunta${v.questions.length === 1 ? '' : 's'}</span>
+<div class="row-actions">${actions(v)}</div></div>`).join('');
+    }
 }
 
 function copyVotacionLink(id) {
@@ -252,7 +301,7 @@ function renderVotacionResults() {
     if (!currentVotacionResults) return;
     const { votacion, respuestas } = currentVotacionResults;
     const total = respuestas.length;
-    const totalStudents = appData.students ? appData.students.length : 0;
+    const totalStudents = appData.students ? getActiveStudents().length : 0;
 
     const questionsHTML = votacion.questions.map((q, qIdx) => {
         const counts = {};
@@ -357,7 +406,7 @@ async function initPublicVote(votId) {
 
 function renderPublicVoteForm(votacion, students) {
     const content = document.getElementById('public-vote-content');
-    const sortedStudents = [...students].sort((a, b) => `${a.last} ${a.first}`.localeCompare(`${b.last} ${b.first}`));
+    const sortedStudents = students.filter(s => !s.withdrawn).sort((a, b) => `${a.last} ${a.first}`.localeCompare(`${b.last} ${b.first}`));
     const questionsHTML = votacion.questions.map((q, qIdx) => {
         const optionsHTML = q.options.map(o => `<label style="display:flex; align-items:center; gap:0.6rem; padding:0.8rem; border:2px solid var(--border); border-radius:8px; margin-bottom:0.6rem; cursor:pointer;"><input type="radio" name="pv-option-${qIdx}" value="${o.replace(/"/g, '&quot;')}" style="accent-color:var(--primary); width:18px; height:18px;">${o}</label>`).join('');
         return `<div style="margin-bottom:1.4rem;"><p style="font-weight:600; margin-bottom:0.7rem; color:var(--text);">${votacion.questions.length > 1 ? `${qIdx + 1}. ` : ''}${q.question}</p>${optionsHTML}</div>`;
