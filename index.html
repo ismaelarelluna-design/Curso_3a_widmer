@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>APP_CURSO_3A | Colegio Alberto Widmer</title>
 <link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
@@ -17,6 +17,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script src="js/core/firebase-init.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -34,18 +36,34 @@
 <div class="menu-overlay" id="menuOverlay" onclick="toggleMobileMenu()"></div>
 <aside class="sidebar" id="sidebar">
 <div class="sidebar-header"><img src="widmer_logo.png" alt="Logo"><h3>3A Widmer</h3></div>
-<nav>
-<div class="nav-item active" onclick="switchTab('dashboard')" style="color: #fbbf24;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg><span>Dashboard</span></div>
-<div class="nav-item" onclick="switchTab('curso')" style="color: #60a5fa;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span>Curso</span></div>
-<div class="nav-item" onclick="switchTab('ingresos')" style="color: #34d399;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg><span>Ingresos</span></div>
-<div class="nav-item" onclick="switchTab('cuotas')" style="color: #a78bfa;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg><span>Cuotas</span></div>
-<div class="nav-item" onclick="switchTab('egresos')" style="color: #f87171;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>Egresos</span></div>
-<div class="nav-item" onclick="switchTab('morosidad')" style="color: #ef4444;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><span>Morosidad</span></div>
-<div class="nav-item" onclick="switchTab('votaciones')" style="color: #fbbf24;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg><span>Votaciones</span></div>
-<div class="nav-item" onclick="switchTab('rifas')" style="color: #ff2ee6;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l4 4"></path><path d="M2.5 21.5 9 15"></path><path d="M15.5 3.5 3.5 15.5a2.12 2.12 0 0 0 3 3l12-12a2.12 2.12 0 0 0-3-3Z"></path><circle cx="10" cy="10" r="1"></circle><circle cx="14" cy="14" r="1"></circle></svg><span>Rifas</span></div>
-<div class="nav-item" onclick="switchTab('transparencia')" style="color: #38bdf8;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span>Transparencia</span></div>
-<div class="nav-item" onclick="switchTab('movimientos')" style="color: #f472b6;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg><span>Movimientos</span></div>
-<div class="nav-item" onclick="switchTab('config')" style="color: #94a3b8;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg><span>Configuración</span></div>
+<nav id="main-nav">
+<div class="nav-group" data-group="finanzas">
+<button type="button" class="nav-group-header" id="navgrp-btn-finanzas" aria-expanded="true" aria-controls="navgrp-finanzas" onclick="toggleNavGroup('finanzas')"><span class="nav-group-title">Finanzas</span><svg class="nav-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+<div class="nav-group-body" id="navgrp-finanzas">
+<div class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard')" style="color: #fbbf24;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg><span>Panel Central</span></div>
+<div class="nav-item" data-tab="cuotas" onclick="switchTab('cuotas')" style="color: #a78bfa;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg><span>Cuotas</span></div>
+<div class="nav-item" data-tab="ingresos" onclick="switchTab('ingresos')" style="color: #34d399;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg><span>Ingresos Extras</span></div>
+<div class="nav-item" data-tab="egresos" onclick="switchTab('egresos')" style="color: #f87171;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg><span>Gastos</span></div>
+<div class="nav-item" data-tab="morosidad" onclick="switchTab('morosidad')" style="color: #ef4444;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><span>Morosidad</span></div>
+</div></div>
+<div class="nav-group" data-group="curso">
+<button type="button" class="nav-group-header" id="navgrp-btn-curso" aria-expanded="true" aria-controls="navgrp-curso" onclick="toggleNavGroup('curso')"><span class="nav-group-title">Curso y actividades</span><svg class="nav-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+<div class="nav-group-body" id="navgrp-curso">
+<div class="nav-item" data-tab="curso" onclick="switchTab('curso')" style="color: #60a5fa;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span>Curso</span></div>
+<div class="nav-item" data-tab="votaciones" onclick="switchTab('votaciones')" style="color: #fbbf24;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg><span>Votaciones</span></div>
+<div class="nav-item" data-tab="rifas" onclick="switchTab('rifas')" style="color: #ff2ee6;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l4 4"></path><path d="M2.5 21.5 9 15"></path><path d="M15.5 3.5 3.5 15.5a2.12 2.12 0 0 0 3 3l12-12a2.12 2.12 0 0 0-3-3Z"></path><circle cx="10" cy="10" r="1"></circle><circle cx="14" cy="14" r="1"></circle></svg><span>Rifas</span></div>
+</div></div>
+<div class="nav-group" data-group="publico">
+<button type="button" class="nav-group-header" id="navgrp-btn-publico" aria-expanded="true" aria-controls="navgrp-publico" onclick="toggleNavGroup('publico')"><span class="nav-group-title">Público</span><svg class="nav-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+<div class="nav-group-body" id="navgrp-publico">
+<div class="nav-item" data-tab="transparencia" onclick="switchTab('transparencia')" style="color: #38bdf8;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span>Transparencia</span></div>
+</div></div>
+<div class="nav-group" data-group="admin">
+<button type="button" class="nav-group-header" id="navgrp-btn-admin" aria-expanded="true" aria-controls="navgrp-admin" onclick="toggleNavGroup('admin')"><span class="nav-group-title">Administración</span><svg class="nav-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+<div class="nav-group-body" id="navgrp-admin">
+<div class="nav-item" data-tab="movimientos" onclick="switchTab('movimientos')" style="color: #f472b6;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg><span>Movimientos</span></div>
+<div class="nav-item" data-tab="config" onclick="switchTab('config')" style="color: #94a3b8;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg><span>Configuración</span></div>
+</div></div>
 </nav>
 <div class="sidebar-footer">
 <button class="btn btn-danger btn-sm" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg><span>Salir</span></button>
@@ -54,9 +72,9 @@
 <main class="main-content">
 <div class="top-bar">
 <div style="display:flex; align-items:center;">
-<button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+<button type="button" class="hamburger" id="menu-btn" aria-label="Mostrar u ocultar el menú" aria-controls="sidebar" aria-expanded="true" onclick="toggleMobileMenu()"><span></span><span></span><span></span></button>
 <div style="display:flex; flex-direction:column; gap:0.5rem;">
-<h2 id="page-title" style="font-size:1.5rem; color:var(--text);">Dashboard General</h2>
+<h2 id="page-title" style="font-size:1.5rem; color:var(--text);">Panel Central</h2>
 <p style="color:var(--text-light); font-size:0.9rem;">Año <span id="current-year">2026</span></p>
 </div>
 </div>
@@ -65,7 +83,7 @@
 <span id="current-user-display" style="font-weight:600; font-size:0.9rem; padding:0.5rem 1rem; background:var(--hover); border-radius:20px;">Usuario</span>
 </div>
 </div>
-<div style="background:var(--card); padding:1rem 2rem; border-bottom:1px solid var(--border); overflow-x:auto;">
+<div class="month-bar" id="month-bar">
 <div class="month-selector" id="month-selector">
 <button class="month-btn" data-month="03" onclick="setMonth('03')">Mar</button>
 <button class="month-btn" data-month="04" onclick="setMonth('04')">Abr</button>
@@ -110,22 +128,33 @@
 </div>
 </div>
 <div id="tab-curso" class="tab-content">
-<div class="card"><h3>Listado de Alumnos <div style="display:flex; gap:0.5rem;"><button class="btn btn-sm btn-primary" onclick="openEditStudentModal()">Editar Masivo</button><button class="btn btn-sm btn-success" onclick="openAddStudentModal()">+ Agregar Alumno</button></div></h3><div id="students-list-curso"></div></div>
+<section class="kpi-banner" id="curso-banner" aria-live="polite"></section>
+<div class="card">
+<div class="card-head"><h3>Listado de Alumnos</h3><button class="btn btn-sm btn-success" onclick="openAddStudentModal()">+ Agregar Alumno</button></div>
+<div class="toolbar"><label class="tb-field grow"><span>Buscar</span><input type="search" id="curso-q" placeholder="Nombre, apoderado o teléfono" oninput="cursoSetQuery(this.value)" autocomplete="off"></label><label class="tb-field"><span>Mostrar</span><select id="curso-filter" onchange="cursoSetFilter(this.value)"><option value="active">En el curso</option><option value="participa">Solo participan</option><option value="no">No participan</option><option value="retired">Retirados</option><option value="all">Todos</option></select></label><div class="tb-end"><span class="tb-count" id="curso-count"></span><div id="curso-view-toggle"></div></div></div>
+<div id="students-list-curso"></div>
+</div>
 </div>
 <div id="tab-ingresos" class="tab-content">
-<div class="card"><h3>Ingresos Extra <button class="btn btn-sm btn-primary" onclick="openIngresoModal()">+ Nuevo Ingreso</button></h3><div id="ingresos-list"></div></div>
+<section class="kpi-banner" id="ingresos-banner" aria-live="polite"></section>
+<div class="card">
+<div class="card-head"><h3>Ingresos Extras</h3><button class="btn btn-sm btn-primary" onclick="openIngresoModal()">+ Nuevo Ingreso</button></div>
+<div class="toolbar"><label class="tb-field grow"><span>Buscar</span><input type="search" id="ingresos-q" placeholder="Evento o fecha" oninput="ingresosSetQuery(this.value)" autocomplete="off"></label><label class="tb-field"><span>Orden</span><select id="ingresos-sort" onchange="ingresosSetSort(this.value)"><option value="recent">Más recientes</option><option value="oldest">Más antiguos</option><option value="name">Nombre A-Z</option><option value="amount">Mayor monto</option></select></label><label class="tb-field"><span>Estado</span><select id="ingresos-status" onchange="ingresosSetStatus(this.value)"><option value="all">Todos</option><option value="complete">Pago completo</option><option value="pending">Con pendientes</option></select></label><div class="tb-field"><span>Agrupar</span><div id="ingresos-group-toggle"></div></div><div class="tb-end"><span class="tb-count" id="ingresos-count"></span><div id="ingresos-view-toggle"></div></div></div>
+<div id="ingresos-list"></div>
+</div>
 </div>
 <div id="tab-cuotas" class="tab-content">
-<div class="card"><h3>Pago de Cuotas - <span id="cuota-month-label">Mayo 2026</span></h3><div id="cuotas-list"></div></div>
+<section class="kpi-banner" id="cuotas-banner" aria-live="polite"></section>
+<div class="card">
+<div class="card-head"><h3>Pago de Cuotas</h3></div>
+<div class="toolbar"><label class="tb-field grow"><span>Buscar</span><input type="search" id="cuotas-q" placeholder="Nombre del alumno o apoderado" oninput="cuotasSetQuery(this.value)" autocomplete="off"></label><label class="tb-field"><span>Estado</span><select id="cuotas-status" onchange="cuotasSetStatus(this.value)"><option value="all">Todos</option><option value="paid">Pagados</option><option value="pending">Pendientes</option><option value="no">No participan</option></select></label><div class="tb-end"><span class="tb-count" id="cuotas-count"></span><div id="cuotas-view-toggle"></div></div></div>
+<div id="cuotas-list"></div>
+</div>
 </div>
 <div id="tab-egresos" class="tab-content">
 <div class="card">
 <h3>Gastos</h3>
-<div class="stat-card expense" style="margin-bottom:1.5rem; cursor:default;">
-<h4>💰 Gasto Total Acumulado (Todos los meses)</h4>
-<div class="value" id="egresos-total-amount" style="color:var(--danger);">$0</div>
-<div class="subtext" id="egresos-total-count">0 registros en total</div>
-</div>
+<section class="kpi-banner" id="egresos-banner" aria-live="polite"></section>
 <div style="display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
 <button class="btn btn-sm btn-warning" onclick="showMonthlyExpenses()">📅 Ver desglose por mes</button>
 <button class="btn btn-sm btn-primary" onclick="openEgresoModal()">+ Agregar Gasto</button>
@@ -135,25 +164,30 @@
 </div>
 </div>
 <div id="tab-morosidad" class="tab-content">
+<section class="kpi-banner" id="morosidad-banner" aria-live="polite"></section>
 <div class="card">
-<h3>📋 Morosidad</h3>
-<p style="font-size:0.9rem; color:var(--text-light); margin-bottom:1rem;">Alumnos con deudas pendientes de mensualidades o eventos.</p>
-<div id="morosidad-list" class="morosidad-grid"></div>
+<div class="card-head"><h3>📋 Morosidad</h3></div>
+<p class="muted-note">Alumnos que participan y tienen deudas de mensualidades o eventos por alumno.</p>
+<div class="toolbar"><label class="tb-field grow"><span>Buscar</span><input type="search" id="morosidad-q" placeholder="Nombre del alumno o apoderado" oninput="morosidadSetQuery(this.value)" autocomplete="off"></label><label class="tb-field"><span>Ordenar por</span><select id="morosidad-sort" onchange="morosidadSetSort(this.value)"><option value="high">Monto: mayor a menor</option><option value="low">Monto: menor a mayor</option><option value="name">Nombre A-Z</option></select></label><div class="tb-end"><span class="tb-count" id="morosidad-count"></span><div id="morosidad-view-toggle"></div></div></div>
+<div id="morosidad-list"></div>
 </div>
 </div>
 <div id="tab-votaciones" class="tab-content">
+<section class="kpi-banner" id="votaciones-banner" aria-live="polite"></section>
 <div class="card">
-<h3>🗳️ Votaciones <button class="btn btn-sm btn-primary" onclick="openVotacionModal()">+ Nueva Votación</button></h3>
-<p style="font-size:0.9rem; color:var(--text-light); margin-bottom:1rem;">Crea una votación, comparte el link con el curso y revisa los resultados en tiempo real.</p>
-<div id="votaciones-list" class="morosidad-grid"></div>
+<div class="card-head"><h3>🗳️ Votaciones</h3><button class="btn btn-sm btn-primary" onclick="openVotacionModal()">+ Nueva Votación</button></div>
+<p class="muted-note">Crea una votación, comparte el link con el curso y revisa los resultados en tiempo real.</p>
+<div class="toolbar"><label class="tb-field grow"><span>Buscar</span><input type="search" id="votaciones-q" placeholder="Nombre del evento o pregunta" oninput="votacionesSetQuery(this.value)" autocomplete="off"></label><label class="tb-field"><span>Desde</span><input type="date" id="votaciones-from" onchange="votacionesSetFrom(this.value)"></label><label class="tb-field"><span>Hasta</span><input type="date" id="votaciones-to" onchange="votacionesSetTo(this.value)"></label><label class="tb-field"><span>Orden</span><select id="votaciones-sort" onchange="votacionesSetSort(this.value)"><option value="recent">Más recientes</option><option value="oldest">Más antiguas</option><option value="name">Nombre A-Z</option></select></label><div class="tb-end"><span class="tb-count" id="votaciones-count"></span><button type="button" class="btn btn-sm btn-ghost" id="votaciones-clear" onclick="votacionesClearFilters()" hidden>Limpiar filtros</button><div id="votaciones-view-toggle"></div></div></div>
+<div id="votaciones-list"></div>
 </div>
 </div>
 <div id="tab-rifas" class="tab-content">
 <div id="rifas-view-list">
+<section class="kpi-banner" id="rifas-banner" aria-live="polite"></section>
 <div class="card">
-<h3>🎟️ Rifas <button class="btn btn-sm btn-primary" onclick="openCreateRifaModal()">+ Nueva Rifa</button></h3>
-<p style="font-size:0.9rem; color:var(--text-light); margin-bottom:1rem;">Carga los números vendidos, define los premios por prioridad y sortea con animación y confeti.</p>
-<div id="rifas-list" class="morosidad-grid"></div>
+<div class="card-head"><h3>🎟️ Rifas</h3><button class="btn btn-sm btn-primary" onclick="openCreateRifaModal()">+ Nueva Rifa</button></div>
+<div class="toolbar"><label class="tb-field grow"><span>Buscar</span><input type="search" id="rifas-q" placeholder="Nombre de la rifa" oninput="rifasSetQuery(this.value)" autocomplete="off"></label><label class="tb-field"><span>Desde</span><input type="date" id="rifas-from" onchange="rifasSetFrom(this.value)"></label><label class="tb-field"><span>Hasta</span><input type="date" id="rifas-to" onchange="rifasSetTo(this.value)"></label><label class="tb-field"><span>Estado</span><select id="rifas-status" onchange="rifasSetStatus(this.value)"><option value="all">Todas</option><option value="pending">Pendientes</option><option value="drawn">Sorteadas</option></select></label><label class="tb-field"><span>Orden</span><select id="rifas-sort" onchange="rifasSetSort(this.value)"><option value="recent">Más recientes</option><option value="oldest">Más antiguas</option><option value="name">Nombre A-Z</option></select></label><div class="tb-end"><span class="tb-count" id="rifas-count"></span><button type="button" class="btn btn-sm btn-ghost" id="rifas-clear" onclick="rifasClearFilters()" hidden>Limpiar filtros</button><div id="rifas-view-toggle"></div></div></div>
+<div id="rifas-list"></div>
 </div>
 </div>
 <div id="rifas-view-detail" style="display:none;">
@@ -207,11 +241,13 @@
 </div>
 </div>
 <div id="tab-movimientos" class="tab-content">
+<section class="kpi-banner" id="movimientos-banner" aria-live="polite"></section>
 <div class="card">
-<h3>Registro de Actividad</h3>
-<div class="filters"><div class="input-group"><label>Filtrar por Mes</label><select id="filter-month" onchange="renderMovimientos()"><option value="all">Todos los meses</option><option value="03">Marzo 2026</option><option value="04">Abril 2026</option><option value="05">Mayo 2026</option><option value="06">Junio 2026</option><option value="07">Julio 2026</option><option value="08">Agosto 2026</option><option value="09">Septiembre 2026</option><option value="10">Octubre 2026</option><option value="11">Noviembre 2026</option><option value="12">Diciembre 2026</option></select></div></div>
-<div style="margin-bottom:1rem; padding:1rem; background:var(--hover); border-radius:8px; font-size:0.9rem; color:var(--text-light);"><strong>Nota:</strong> Solo el usuario I.ARELLUNA puede eliminar registros.</div>
-<table><thead><tr><th>Fecha/Hora</th><th>Usuario</th><th>Acción</th><th>Detalle</th><th>Acciones</th></tr></thead><tbody id="movimientos-table-body"></tbody></table>
+<div class="card-head"><h3>Registro de Actividad</h3></div>
+<p class="muted-note">Solo el usuario I.ARELLUNA puede eliminar registros.</p>
+<div class="toolbar"><label class="tb-field grow"><span>Buscar</span><input type="search" id="movimientos-q" placeholder="Detalle de la acción" oninput="movimientosSetQuery(this.value)" autocomplete="off"></label><label class="tb-field"><span>Usuario</span><select id="movimientos-user" onchange="movimientosSetUser(this.value)"><option value="all">Todos</option></select></label><label class="tb-field"><span>Acción</span><select id="movimientos-action" onchange="movimientosSetAction(this.value)"><option value="all">Todas</option></select></label><div class="tb-end"><span class="tb-count" id="movimientos-count"></span><div id="movimientos-view-toggle"></div></div></div>
+<div id="movimientos-list"></div>
+<div id="movimientos-pager" class="pager"></div>
 </div>
 </div>
 <div id="tab-config" class="tab-content">
@@ -233,9 +269,20 @@
 <div id="public-vote-content"></div>
 </div>
 </div>
-<div id="modal-edit-student" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-edit-student')">&times;</span><h3>Editar Alumno</h3><input type="hidden" id="edit-student-id"><div class="input-group"><label>Apoderado</label><input type="text" id="edit-guard"></div><div class="input-group"><label>Teléfono</label><input type="text" id="edit-phone"></div><button class="btn btn-primary" onclick="saveStudentEdit()">Guardar</button></div></div>
+<div id="modal-edit-student" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-edit-student')">&times;</span><h3>Editar Alumno</h3><input type="hidden" id="edit-student-id"><div class="form-row"><div class="input-group"><label for="edit-last">Apellidos</label><input type="text" id="edit-last"></div><div class="input-group"><label for="edit-first">Nombres</label><input type="text" id="edit-first"></div></div><div class="input-group"><label for="edit-guard">Apoderado</label><input type="text" id="edit-guard"></div><div class="input-group"><label for="edit-phone">Teléfono</label><input type="text" id="edit-phone"></div><button class="btn btn-primary" onclick="saveStudentEdit()">Guardar</button></div></div>
+<div id="modal-student-view" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-student-view')">&times;</span><h3>Datos del alumno</h3><div id="student-view-body"></div><button class="btn btn-primary" style="margin-top:1rem;" onclick="closeModal('modal-student-view')">Cerrar</button></div></div>
 <div id="modal-add-student" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-add-student')">&times;</span><h3>Agregar Nuevo Alumno</h3><div class="form-row"><div class="input-group"><label>Apellido</label><input type="text" id="add-student-last"></div><div class="input-group"><label>Nombres</label><input type="text" id="add-student-first"></div></div><div class="input-group"><label>Apoderado</label><input type="text" id="add-student-guard"></div><div class="input-group"><label>Teléfono</label><input type="text" id="add-student-phone"></div><button class="btn btn-success" onclick="saveNewStudent()">Agregar Alumno</button></div></div>
-<div id="modal-ingreso" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-ingreso')">&times;</span><h3>Nuevo Ingreso</h3><div class="form-row"><div class="input-group"><label>Tipo</label><select id="ingreso-type" onchange="toggleIngresoFields()"><option value="fijo">Monto Fijo</option><option value="cuota">Monto por Cuota (Alumnos)</option></select></div><div class="input-group"><label>Fecha</label><input type="date" id="ingreso-date"></div></div><div class="input-group"><label>Concepto</label><input type="text" id="ingreso-concept"></div><div id="ingreso-fijo-fields"><div class="input-group"><label>Monto Total ($)</label><input type="number" id="ingreso-amount"></div></div><div id="ingreso-cuota-fields" style="display:none;"><div class="input-group"><label>Monto por Alumno ($)</label><input type="number" id="ingreso-amount-per"></div><div class="input-group"><label>Seleccionar Alumnos</label><div class="checkbox-grid" id="ingreso-students-checks"></div></div></div><button class="btn btn-primary" style="margin-top:1rem;" onclick="saveIngreso()">Guardar</button></div></div>
+<div id="modal-ingreso" class="modal"><div class="modal-content modal-wide"><span class="close-modal" onclick="closeModal('modal-ingreso')">&times;</span><h3 id="ingreso-modal-title">Nuevo Ingreso</h3>
+<div class="form-row"><div class="input-group"><label for="ingreso-type">Tipo</label><select id="ingreso-type" onchange="toggleIngresoFields()"><option value="fijo">Monto Fijo</option><option value="cuota">Monto por Alumno</option></select></div><div class="input-group"><label for="ingreso-date">Fecha</label><input type="date" id="ingreso-date"></div></div>
+<div class="input-group"><label for="ingreso-concept">Concepto</label><input type="text" id="ingreso-concept"></div>
+<div id="ingreso-fijo-fields"><div class="input-group"><label for="ingreso-amount">Monto Total ($)</label><input type="number" id="ingreso-amount"></div></div>
+<div id="ingreso-cuota-fields" style="display:none;">
+<div class="input-group"><label for="ingreso-amount-per">Monto por Alumno ($)</label><input type="number" id="ingreso-amount-per" oninput="updateIngresoSummary()"></div>
+<div class="kpi-banner kpi-banner-compact" id="ingreso-summary"></div>
+<div class="toolbar toolbar-tight"><label class="tb-field grow"><span>Buscar alumno</span><input type="search" id="ingreso-students-q" placeholder="Nombre" oninput="setIngresoStudentsQuery(this.value)" autocomplete="off"></label><label class="tb-field"><span>Estado</span><select id="ingreso-students-status" onchange="setIngresoStudentsStatus(this.value)"><option value="all">Todos</option><option value="paid">Pagados</option><option value="exempt">Eximidos</option><option value="pending">Pendientes</option></select></label><div class="tb-end"><div id="ingreso-students-view"></div></div></div>
+<div id="ingreso-students-list" class="ingreso-students-scroll"></div>
+</div>
+<button class="btn btn-primary" id="ingreso-save-btn" style="margin-top:1rem;" onclick="saveIngresoForm()">Guardar</button></div></div>
 <div id="modal-egreso" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-egreso')">&times;</span><h3>Agregar Gasto</h3><input type="hidden" id="egreso-edit-id"><div class="form-row"><div class="input-group"><label>Fecha</label><input type="date" id="egreso-date"></div><div class="input-group"><label>Monto ($)</label><input type="number" id="egreso-amount"></div></div><div class="input-group"><label>Descripción</label><input type="text" id="egreso-desc"></div><div class="input-group"><label>Comprobante (Foto/Archivo)</label><div class="file-upload" onclick="document.getElementById('egreso-file').click()"><span id="file-label">Clic para subir archivo</span><input type="file" id="egreso-file" style="display:none" accept="image/*,.pdf" onchange="previewFile(this)"><img id="file-preview-img" class="file-preview" style="display:none;"></div><button type="button" class="btn btn-sm btn-danger" id="btn-remove-img" style="display:none; margin-top:0.5rem;" onclick="removeImage()">🗑️ Quitar imagen</button></div><button class="btn btn-danger" style="margin-top:1rem;" onclick="saveEgreso()">Guardar Gasto</button></div></div>
 <div id="modal-share" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-share')">&times;</span><h3>Compartir Transparencia</h3><p style="margin-bottom:1rem; color:var(--text-light);">Copia este link y compártelo con el curso. Podrán ver la información sin necesidad de contraseña.</p><div class="share-link-box"><input type="text" id="share-link" readonly><button class="btn btn-sm btn-primary" onclick="copyShareLink()">Copiar</button></div><button class="btn btn-primary" onclick="closeModal('modal-share')">Cerrar</button></div></div>
 <div id="modal-egresos-summary" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-egresos-summary')">&times;</span><h3 id="summary-title">Desglose Mensual</h3><div id="summary-content" style="margin-top:1rem;"></div><button class="btn btn-primary" style="margin-top:1.5rem;" onclick="closeModal('modal-egresos-summary')">Cerrar</button></div></div>
@@ -274,6 +321,7 @@
 <button id="rifa-save-btn" class="btn btn-primary" style="width:100%; margin-top:0.5rem;" onclick="saveRifa()">Crear Rifa</button>
 </div></div>
 <script src="js/core/utils.js"></script>
+<script src="js/core/students.js"></script>
 <script src="js/tabs/dashboard.js"></script>
 <script src="js/tabs/curso.js"></script>
 <script src="js/tabs/ingresos.js"></script>
