@@ -694,3 +694,9 @@ tbody tr:hover td { background: var(--hover); }
 @media (prefers-reduced-motion: reduce) { .sidebar, .hamburger span, .modal-content, .tab-content, .kpi { transition: none !important; animation: none !important; } }
 .chip { white-space: nowrap; }
 @media (max-width: 700px) { #cuotas-list .data-card-head .chip { margin-left: 0; } }
+
+/* Morosidad: criterio de cálculo seleccionado */
+.kpi.kpi-selected { box-shadow: 0 0 0 2px var(--primary); }
+.chip-wrap.end { justify-content: flex-end; }
+.debt-line .chip-wrap { max-width: 55%; }
+@media (max-width: 700px) { #morosidad-scope-toggle .view-toggle { width: 100%; } #morosidad-scope-toggle .view-toggle button { flex: 1; } }

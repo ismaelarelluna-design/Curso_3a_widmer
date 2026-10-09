@@ -168,7 +168,7 @@
 <div class="card">
 <div class="card-head"><h3>📋 Morosidad</h3></div>
 <p class="muted-note">Alumnos que participan y tienen deudas de mensualidades o eventos por alumno.</p>
-<div class="toolbar"><label class="tb-field grow"><span>Buscar</span><input type="search" id="morosidad-q" placeholder="Nombre del alumno o apoderado" oninput="morosidadSetQuery(this.value)" autocomplete="off"></label><label class="tb-field"><span>Ordenar por</span><select id="morosidad-sort" onchange="morosidadSetSort(this.value)"><option value="high">Monto: mayor a menor</option><option value="low">Monto: menor a mayor</option><option value="name">Nombre A-Z</option></select></label><div class="tb-end"><span class="tb-count" id="morosidad-count"></span><div id="morosidad-view-toggle"></div></div></div>
+<div class="toolbar"><div class="tb-field"><span>Calcular deuda</span><div id="morosidad-scope-toggle"></div></div><label class="tb-field grow"><span>Buscar</span><input type="search" id="morosidad-q" placeholder="Nombre del alumno o apoderado" oninput="morosidadSetQuery(this.value)" autocomplete="off"></label><label class="tb-field"><span>Ordenar por</span><select id="morosidad-sort" onchange="morosidadSetSort(this.value)"><option value="high">Monto: mayor a menor</option><option value="low">Monto: menor a mayor</option><option value="name">Nombre A-Z</option></select></label><div class="tb-end"><span class="tb-count" id="morosidad-count"></span><div id="morosidad-view-toggle"></div></div></div>
 <div id="morosidad-list"></div>
 </div>
 </div>

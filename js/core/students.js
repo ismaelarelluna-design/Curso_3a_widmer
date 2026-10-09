@@ -43,7 +43,15 @@ function getStudentDebt(studentId) {
         return rec && (rec.paid || rec.exempt);
     });
     const totalDebt = (unpaidMonths.length * cuotaMensual) + unpaidExtras.reduce((sum, e) => sum + (e.amountPer || 0), 0);
-    return { unpaidMonths, paidMonths, unpaidExtras, paidExtras, cuotaMensual, totalDebt, periods: unpaidMonths.length + unpaidExtras.length };
+    // Meses que aún no vencen (después del actual, hasta diciembre) y siguen sin pagar:
+    // sirven para calcular el "pago completo del año", distinto de solo "ponerse al día".
+    const futureMonths = ALL_MONTHS.slice(getCurrentMonthIndex() + 1).filter(m => {
+        const cuota = appData.cuotas.find(c => c.month === `2026-${m}`);
+        return cuota && !cuota.paidStudents.includes(studentId);
+    });
+    const yearDebt = totalDebt + futureMonths.length * cuotaMensual;
+    const periods = unpaidMonths.length + unpaidExtras.length;
+    return { unpaidMonths, paidMonths, unpaidExtras, paidExtras, cuotaMensual, totalDebt, periods, futureMonths, yearDebt, yearPeriods: periods + futureMonths.length };
 }
 
 // Estado de un alumno dentro de un evento "por alumno": 'paid' | 'exempt' | null (pendiente)
