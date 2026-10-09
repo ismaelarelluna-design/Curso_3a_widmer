@@ -117,20 +117,20 @@ function renderRifasList() {
     if (mode === 'cards') {
         container.className = 'data-grid';
         container.innerHTML = items.map(r => `<div class="data-card clickable ${r.drawn ? 'is-paid' : ''}" ${open(r.id)}>
-<div class="data-card-head"><div class="row-main"><div class="student-name">${escapeRifaHtml(r.name)}</div><div class="student-detail">📅 ${formatRifaDate(r.date)}</div></div>${chip(r)}</div>
-<div class="rifa-meta"><span>🎫 <b>${r.soldNumbers.length}</b> de ${r.totalNumbers} vendidos</span><span>🏆 <b>${r.prizes.length}</b> premio${r.prizes.length === 1 ? '' : 's'}</span></div>
+<div class="data-card-head"><div class="row-main"><div class="student-name">${escapeRifaHtml(r.name)}</div><div class="student-detail">📅 ${formatRifaDate(r.date)}</div></div><div class="chip-wrap end">${rifaTipoChip(r)}${chip(r)}</div></div>
+<div class="rifa-meta"><span>🎫 ${rifaSoldText(r)}</span><span>🏆 <b>${r.prizes.length}</b> premio${r.prizes.length === 1 ? '' : 's'}</span></div>
 <div class="open-hint">Abrir rifa →</div></div>`).join('');
     } else {
         container.className = 'data-list';
         container.innerHTML = items.map(r => `<div class="data-row clickable ${r.drawn ? 'is-paid' : ''}" ${open(r.id)}>
-<div class="row-main"><div class="row-title">${escapeRifaHtml(r.name)}</div><div class="row-sub">📅 ${formatRifaDate(r.date)} · 🎫 ${r.soldNumbers.length}/${r.totalNumbers} vendidos · 🏆 ${r.prizes.length} premio${r.prizes.length === 1 ? '' : 's'}</div></div>${chip(r)}
+<div class="row-main"><div class="row-title">${escapeRifaHtml(r.name)}</div><div class="row-sub">📅 ${formatRifaDate(r.date)} · 🎫 ${isRifaLibre(r) ? rifaSoldText(r).replace(/<\/?b>/g, '') : r.soldNumbers.length + '/' + r.totalNumbers + ' vendidos'} · 🏆 ${r.prizes.length} premio${r.prizes.length === 1 ? '' : 's'}</div></div>${chip(r)}
 <span class="open-hint">Abrir →</span></div>`).join('');
     }
 }
 
 // ===== Editor de rifa (crear / editar) =====
 
-function openCreateRifaModal() { openRifaEditor(null); }
+function openCreateRifaModal() { openRifaTipoModal(); }  // elige modalidad: asignada o números libres
 function openEditRifaModal() { openRifaEditor(currentRifaId); }
 
 function openRifaEditor(id) {
@@ -608,6 +608,7 @@ async function saveRifa(forceOverwrite) {
 function openRifaDetail(id) {
     const rifa = rifas.find(r => r.id === id);
     if (!rifa) return;
+    if (currentRifaId !== id) { rifaLibreSelected.clear(); }
     currentRifaId = id;
     document.getElementById('rifas-view-list').style.display = 'none';
     document.getElementById('rifas-view-detail').style.display = 'block';
@@ -683,6 +684,7 @@ ${actionsHTML}
 </div>
 </div>`;
 
+    if (isRifaLibre(rifa)) renderRifaLibreExtras(rifa);
     if (rifa.drawn) renderRifaResultsTable(rifa.results, rifa.soldNumbers.length);
 }
 
@@ -738,6 +740,7 @@ async function startRifaDraw() {
         if (idx !== -1) rifas[idx] = fresh; else rifas.unshift(fresh);
         if (fresh.drawn) { alert('Esta rifa ya fue sorteada en otro dispositivo.'); renderRifas(); renderRifaDetail(fresh); return; }
         if (fresh.soldNumbers.length < fresh.prizes.length) { alert('Hay más premios que números vendidos. Edita la rifa antes de sortear.'); renderRifaDetail(fresh); return; }
+        if (isRifaLibre(fresh) && rlReserved(fresh).length && !confirm(`Hay ${plural(rlReserved(fresh).length, 'número reservado', 'números reservados')} que todavía no se pagaron. NO participan en el sorteo.\n\nAceptar: sortear solo con los pagados (${fresh.soldNumbers.length})\nCancelar: volver y confirmar pagos`)) { renderRifaDetail(fresh); return; }
         renderRifaDetail(fresh);
     } catch (e) {
         console.error(e);

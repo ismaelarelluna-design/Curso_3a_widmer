@@ -16,11 +16,11 @@ const ACTION_LABELS = {
     CREAR_VOTACION: 'Votación creada', EDITAR_VOTACION: 'Votación editada', ELIMINAR_VOTACION: 'Votación eliminada',
     ELIMINAR_VOTO: 'Voto eliminado', EXPORTAR_VOTACION: 'Votación exportada',
     CREAR_RIFA: 'Rifa creada', EDITAR_RIFA: 'Rifa editada', ELIMINAR_RIFA: 'Rifa eliminada',
-    SORTEAR_RIFA: 'Rifa sorteada', EXPORTAR_RIFA_PDF: 'Rifa exportada (PDF)',
+    SORTEAR_RIFA: 'Rifa sorteada', RESERVAR_NUMEROS_RIFA: 'Números de rifa reservados', PAGO_NUMEROS_RIFA: 'Números de rifa pagados', LIBERAR_NUMEROS_RIFA: 'Números de rifa liberados', EXPORTAR_RIFA_PDF: 'Rifa exportada (PDF)',
     WHATSAPP_MOROSIDAD: 'Aviso de morosidad (WhatsApp)', DESCARGAR_PDF_VOUCHER: 'Estado de cuenta descargado',
     EXPORTAR_PDF: 'Transparencia exportada (PDF)', ACTUALIZAR_CONFIG: 'Configuración actualizada'
 };
-const ACTION_TONE = (code) => /^ELIMINAR|RETIRAR/.test(code) ? 'bad' : (/^(CREAR|AGREGAR|PAGO|INGRESO|REINTEGRAR|SORTEAR)/.test(code) ? 'ok' : (/^EDITAR|ACTUALIZAR|EXIMIR|QUITAR/.test(code) ? 'warn' : 'info'));
+const ACTION_TONE = (code) => /^ELIMINAR|^LIBERAR|RETIRAR/.test(code) ? 'bad' : (/^(CREAR|AGREGAR|PAGO|INGRESO|REINTEGRAR|SORTEAR|RESERVAR)/.test(code) ? 'ok' : (/^EDITAR|ACTUALIZAR|EXIMIR|QUITAR/.test(code) ? 'warn' : 'info'));
 const actionLabel = code => ACTION_LABELS[code] || String(code || '').replace(/_/g, ' ').toLowerCase().replace(/^./, c => c.toUpperCase());
 
 function movimientosSetQuery(v) { movimientosState.q = v; movimientosState.page = 1; renderMovimientosList(); }

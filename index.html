@@ -300,6 +300,18 @@
 </div>
 <div id="modal-votacion" class="modal"><div class="modal-content" style="max-width:650px;"><span class="close-modal" onclick="closeModal('modal-votacion')">&times;</span><h3>Nueva Votación</h3><div class="form-row"><div class="input-group"><label>Nombre del Evento</label><input type="text" id="votacion-event" placeholder="Ej: Paseo de fin de año"></div><div class="input-group"><label>Fecha</label><input type="date" id="votacion-date"></div></div><div id="votacion-questions-list"></div><button type="button" class="btn btn-sm btn-warning" onclick="addVotacionQuestionBlock()" style="margin-bottom:1rem;">+ Agregar otra pregunta</button><button class="btn btn-primary" style="margin-top:0.5rem;" onclick="saveVotacion()">Crear Votación</button></div></div>
 <div id="modal-votacion-results" class="modal"><div class="modal-content" style="max-width:750px;"><span class="close-modal" onclick="closeModal('modal-votacion-results')">&times;</span><h3 id="votacion-results-title">Resultados</h3><p id="votacion-results-event" style="color:var(--text-light); font-size:0.9rem; margin-bottom:1.2rem;"></p><div id="votacion-results-body"></div><div style="display:flex; gap:0.5rem; margin-top:1.5rem; flex-wrap:wrap;"><button class="btn btn-sm btn-success" onclick="exportVotacionCSV()">📊 Exportar Excel (CSV)</button><button class="btn btn-primary" onclick="closeModal('modal-votacion-results')">Cerrar</button></div></div></div>
+<div id="modal-rifa-tipo" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-rifa-tipo')">&times;</span><h3>Nueva rifa: elige la modalidad</h3>
+<div class="rifa-tipo-grid">
+<button type="button" class="rifa-tipo" onclick="chooseRifaTipo('asignada')"><strong>Números asignados</strong><span>Cargas los números vendidos con el nombre de cada comprador (hasta 205). Ideal cuando ya repartiste talonarios.</span></button>
+<button type="button" class="rifa-tipo" onclick="chooseRifaTipo('libre')"><strong>Números libres</strong><span>Tablero de 100 números (configurable) con precio fijo. Cada familia elige los suyos, reserva y transfiere; tú confirmas el pago.</span></button>
+</div></div></div>
+<div id="modal-rifa-libre" class="modal"><div class="modal-content"><span class="close-modal" onclick="closeModal('modal-rifa-libre')">&times;</span><h3 id="rl-modal-title">Nueva rifa de números libres</h3>
+<div class="input-group"><label for="rl-name">Nombre de la rifa</label><input type="text" id="rl-name" maxlength="60" placeholder="Ej: Rifa Día del Niño"></div>
+<div class="form-row"><div class="input-group"><label for="rl-date">Fecha del sorteo</label><input type="date" id="rl-date"></div><div class="input-group"><label for="rl-total">Cantidad de números</label><input type="number" id="rl-total" min="10" max="500" value="100"></div></div>
+<div class="input-group"><label for="rl-price">Valor de cada número ($)</label><input type="number" id="rl-price" min="1" placeholder="Ej: 1000"></div>
+<div class="input-group"><label>Premios (el 1° es el más importante)</label><div id="rl-prize-list"></div><button type="button" class="btn btn-sm btn-ghost" style="margin-top:0.5rem;" onclick="rlAddPrizeRow()">+ Agregar premio</button></div>
+<button class="btn btn-primary" id="rl-save-btn" onclick="saveRifaLibre()">Crear rifa</button></div></div>
+<div id="modal-rifa-num" class="modal"><div class="modal-content" style="max-width:420px;"><span class="close-modal" onclick="closeModal('modal-rifa-num')">&times;</span><h3 id="rl-num-title">Número</h3><div id="rl-num-body"></div></div></div>
 <div id="modal-rifa" class="modal"><div class="modal-content rifa-modal-content"><span class="close-modal" onclick="closeModal('modal-rifa')">&times;</span><h3 id="rifa-modal-title">Nueva Rifa</h3>
 <div class="form-row"><div class="input-group"><label>Nombre de la Rifa</label><input type="text" id="rifa-name" placeholder="Ej: Gira de Estudios" maxlength="80"></div><div class="input-group"><label>Fecha del sorteo</label><input type="date" id="rifa-date"></div></div>
 <div class="input-group"><label>Total de números</label><input type="text" value="205 (fijo para todas las rifas)" disabled></div>
@@ -330,6 +342,7 @@
 <script src="js/tabs/morosidad.js"></script>
 <script src="js/tabs/votaciones.js"></script>
 <script src="js/tabs/rifas.js"></script>
+<script src="js/tabs/rifas-libres.js"></script>
 <script src="js/tabs/transparencia.js"></script>
 <script src="js/tabs/movimientos.js"></script>
 <script src="js/tabs/config.js"></script>
